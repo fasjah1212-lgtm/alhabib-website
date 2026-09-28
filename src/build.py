@@ -384,7 +384,7 @@ def iso_block():
       <div class="iso-list">{items}</div></div></section>'''
 
 # product cards that swap their photo for a clip that plays on hover (key -> first-frame still, clip)
-HOVER_VID = {'doors': ('door-first.jpg', 'door-open.mp4'), 'windows': ('window-first.jpg', 'window-open.mp4'), 'facades': ('facade-first.jpg', 'facade-build.mp4'), 'cladding': ('cladding-first.jpg', 'cladding-build.mp4'), 'skylights': ('skylight-first.jpg', 'skylight-cycle.mp4')}
+HOVER_VID = {'doors': ('door-first.jpg', 'door-open.mp4'), 'windows': ('window-first.jpg', 'window-open.mp4'), 'facades': ('facade-first.jpg', 'facade-build.mp4'), 'cladding': ('cladding-first.jpg', 'cladding-build.mp4'), 'skylights': ('skylight-first.jpg', 'skylight-cycle.mp4'), 'domes': ('dome-first.jpg', 'dome-cycle.mp4'), 'glass': ('glass-first.jpg', 'glass-showcase.mp4')}
 
 def prod_cards():
     out = ''

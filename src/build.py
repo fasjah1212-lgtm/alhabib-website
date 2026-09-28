@@ -338,7 +338,7 @@ BRANCHES = [
 # each branch name opens Google Maps. Until the factory sends each branch's exact pin link, the link searches
 # the factory's name with the branch and city; paste a maps.app.goo.gl link into MAPS to pin one exactly.
 from urllib.parse import quote
-MAPS = {}
+MAPS = {'فرع الدائري الشمالي': 'https://maps.app.goo.gl/LqDKbkHfdy7opApQ8'}
 def map_url(city, name):
     if name in MAPS: return MAPS[name]
     area = 'المدينة الصناعية الأولى بريدة' if name == 'المقر الرئيسي والمصنع' else f"{name.replace('فرع ', '')} {city}".replace(f'{city} {city}', city)

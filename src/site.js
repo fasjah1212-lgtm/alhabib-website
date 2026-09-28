@@ -165,6 +165,93 @@
     addEventListener('load', function(){ measure(); begin(); });
   })();
 
+  // compare: the plan (left) over the finished work (right). Dragging the line only moves the clip edge;
+  // the two images never move or scale, so their structure stays matched while comparing.
+  (function(){
+    var box = document.getElementById('cmp'); if (!box) return;
+    var before = box.querySelector('.cmp-before'), line = box.querySelector('.cmp-line'), knob = box.querySelector('.cmp-knob');
+    var tagB = box.querySelector('.cmp-tag-b'), tagA = box.querySelector('.cmp-tag-a');
+    var cur = 50, target = 50, tau = 0, raf = 0, last = 0, said = -1, touched = false, drag = null, W = 0, L = 0;
+    var AR = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    function ar(n){ return String(n).replace(/\d/g, function(d){ return AR[d]; }); }
+    function measure(){ var r = box.getBoundingClientRect(); W = r.width; L = r.left; }
+    function paint(){
+      var px = cur / 100 * W, k = knob.offsetWidth / 2 + 4;
+      var cp = 'inset(0 ' + (100 - cur).toFixed(3) + '% 0 0)';
+      before.style.webkitClipPath = cp; before.style.clipPath = cp;
+      line.style.transform = 'translate3d(' + px.toFixed(2) + 'px,0,0)';
+      knob.style.transform = 'translate3d(' + Math.min(W - k, Math.max(k, px)).toFixed(2) + 'px,0,0)';
+      tagB.style.opacity = Math.min(1, Math.max(0, (cur - 6) / 14));
+      tagA.style.opacity = Math.min(1, Math.max(0, (94 - cur) / 14));
+      var v = Math.round(cur);
+      if (v !== said){ said = v; knob.setAttribute('aria-valuenow', v); knob.setAttribute('aria-valuetext', 'المخطط ' + ar(v) + '٪، التنفيذ ' + ar(100 - v) + '٪'); }
+    }
+    function frame(t){
+      var dt = last ? Math.min(64, t - last) : 16.7; last = t;
+      cur = tau > 0 ? cur + (target - cur) * (1 - Math.exp(-dt / tau)) : target;
+      if (Math.abs(target - cur) < 0.02) cur = target;
+      paint();
+      raf = cur === target ? 0 : requestAnimationFrame(frame);
+      if (!raf) last = 0;
+    }
+    // follow: tight while a finger or mouse drags (feels attached), softer for taps, keys and the hint
+    function go(x, soft){ target = Math.min(100, Math.max(0, x)); tau = reduce ? 0 : soft || 20; if (!raf) raf = requestAnimationFrame(frame); }
+    function pct(clientX){ return (clientX - L) / W * 100; }
+    function lineX(){ return L + cur / 100 * W; }
+    function grab(e, off){ drag.on = true; drag.off = off; touched = true; try { box.setPointerCapture(e.pointerId); } catch(_){} box.classList.add('dragging'); }
+    box.addEventListener('pointerdown', function(e){
+      if (e.button > 0 || drag) return;
+      measure();
+      var near = knob.contains(e.target) || Math.abs(e.clientX - lineX()) < 28;
+      drag = {id: e.pointerId, sx: e.clientX, sy: e.clientY, t: e.timeStamp, on: false, off: 0};
+      // mouse: press anywhere to take the line there; touch: only the handle grabs at once, so a vertical swipe still scrolls the page
+      if (near) grab(e, e.clientX - lineX());
+      else if (e.pointerType === 'mouse'){ grab(e, 0); go(pct(e.clientX), 70); }
+      if (e.pointerType === 'mouse') e.preventDefault();
+    });
+    box.addEventListener('pointermove', function(e){
+      if (!drag || e.pointerId !== drag.id) return;
+      if (!drag.on){
+        var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+        if (Math.abs(dx) < 7 || Math.abs(dx) < Math.abs(dy)) return;
+        grab(e, 0);
+      }
+      go(pct(e.clientX - drag.off));
+    });
+    function end(e){
+      if (!drag || e.pointerId !== drag.id) return;
+      var d = drag; drag = null; box.classList.remove('dragging');
+      // a quick tap away from the handle glides the line to the tap
+      if (!d.on && e.type === 'pointerup' && e.timeStamp - d.t < 600 && Math.abs(e.clientX - d.sx) < 7 && Math.abs(e.clientY - d.sy) < 7){ touched = true; go(pct(e.clientX), 90); }
+    }
+    box.addEventListener('pointerup', end);
+    box.addEventListener('pointercancel', end);
+    box.addEventListener('dragstart', function(e){ e.preventDefault(); });
+    knob.addEventListener('keydown', function(e){
+      var k = e.key, x = null;
+      if (k === 'ArrowRight' || k === 'ArrowUp') x = target + 5;
+      else if (k === 'ArrowLeft' || k === 'ArrowDown') x = target - 5;
+      else if (k === 'PageUp') x = target + 20;
+      else if (k === 'PageDown') x = target - 20;
+      else if (k === 'Home') x = 0;
+      else if (k === 'End') x = 100;
+      if (x === null) return;
+      e.preventDefault(); touched = true; measure(); go(Math.round(x), 90);
+    });
+    function resize(){ measure(); paint(); }
+    if ('ResizeObserver' in window) new ResizeObserver(resize).observe(box); else addEventListener('resize', resize);
+    resize();
+    // one gentle sway the first time it comes into view, ending back in the middle, to show it can be dragged
+    if (!reduce && 'IntersectionObserver' in window){
+      var io = new IntersectionObserver(function(es){
+        if (!es[0].isIntersecting) return; io.disconnect();
+        var steps = [[62, 0], [40, 650], [50, 1300]];
+        steps.forEach(function(s){ setTimeout(function(){ if (!touched && !drag){ measure(); go(s[0], 200); } }, 700 + s[1]); });
+      }, {threshold: .6});
+      io.observe(box);
+    }
+  })();
+
   // products strip: native scroll with buttons (no pinning, so no jump at the page end)
   var pin = document.getElementById('pin'), prog = document.getElementById('prog');
   if (pin){

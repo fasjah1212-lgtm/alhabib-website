@@ -116,6 +116,34 @@ EXTRA_CSS += r'''
 .hero-track.scrub .hero{position:sticky;min-height:100vh;min-height:100svh}
 .hero-held .wa{transform:translateY(calc(-1 * var(--hold-lift, 0px)))}
 @media print{.hero-track{height:auto!important;background:none}.hero-track .hero{position:relative!important;top:auto!important}.hero-vid{display:none}}
+/* from imagination to reality: the plan and the finished work stacked; dragging the line changes only which part shows (site.js "compare") */
+.sig{display:block;min-height:0;background:#17110F;padding-block:clamp(64px,8vw,120px) clamp(56px,7vw,104px)}
+.sig::before{content:none}
+.sig-head{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(18px,4vw,56px);align-items:end;margin-bottom:clamp(26px,3.5vw,48px)}
+.sig-head h2{margin-top:0;line-height:1.15;text-wrap:balance}
+.sig-head>p{color:rgba(255,255,255,.8);max-width:44ch;font-size:1.1rem}
+.sig-sub{margin-top:12px;color:rgba(255,255,255,.62)}
+.cmp{position:relative;direction:ltr;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-y;cursor:ew-resize;--k:56px}
+.cmp-media{position:relative;aspect-ratio:1672/941;max-height:84vh;max-height:84svh;overflow:hidden;background:#EDEBE7;border-radius:0 clamp(28px,4vw,64px) 0 clamp(28px,4vw,64px);box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.cmp-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;pointer-events:none;-webkit-user-drag:none}
+.cmp-before{position:absolute;inset:0;-webkit-clip-path:inset(0 50% 0 0);clip-path:inset(0 50% 0 0)}
+.cmp-tag{position:absolute;top:clamp(12px,2vw,24px);padding:7px 16px;border-radius:0 14px 0 14px;font-weight:700;font-size:.92rem;line-height:1.6;pointer-events:none;transition:opacity .3s var(--ease)}
+.cmp-tag-b{left:clamp(12px,2vw,24px);background:#fff;color:var(--ink);box-shadow:0 8px 20px -10px rgba(31,26,23,.35)}
+.cmp-tag-a{right:clamp(12px,2vw,24px);background:var(--red);color:#fff;box-shadow:0 8px 20px -10px rgba(0,0,0,.5)}
+.cmp-line{position:absolute;top:0;bottom:0;left:0;width:3px;margin-left:-1.5px;background:var(--red);box-shadow:0 0 0 1px rgba(255,255,255,.35);pointer-events:none;will-change:transform;transform:translate3d(0,0,0)}
+.cmp-knob{position:absolute;top:50%;left:0;touch-action:none;width:var(--k);height:var(--k);margin:calc(var(--k) / -2) 0 0 calc(var(--k) / -2);cursor:grab;will-change:transform;outline:none;border-radius:0 20px 0 20px}
+.cmp-k{display:grid;place-items:center;width:100%;height:100%;border-radius:inherit;background:var(--red);color:#fff;border:3px solid #fff;box-shadow:0 10px 24px -8px rgba(0,0,0,.55);transition:transform .25s var(--ease),background-color .25s var(--ease)}
+.cmp-knob:hover .cmp-k{background:var(--red-deep)}
+.cmp.dragging,.cmp.dragging .cmp-knob{cursor:grabbing}
+.cmp.dragging .cmp-k{transform:scale(1.08);background:var(--red-deep)}
+.cmp-knob:focus-visible .cmp-k{box-shadow:0 0 0 3px #17110F,0 0 0 6px #fff}
+.cmp-hint{margin-top:16px;text-align:center;color:rgba(255,255,255,.6);font-size:.95rem}
+.sig-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px 24px;margin-top:clamp(26px,3vw,40px)}
+.sig-foot .promise{margin-top:0}
+@media (max-width:900px){.sig-head{grid-template-columns:1fr;align-items:start}}
+@media (max-width:700px){.cmp{--k:50px}.cmp-media{aspect-ratio:4/3}.cmp-tag{font-size:.85rem;padding:6px 12px}}
+@media print{.cmp-line,.cmp-knob,.cmp-hint{display:none}}
+
 /* top clients: white logo tiles drifting along the red band under the hero */
 .clients{background:var(--red);color:#fff;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:clamp(14px,2vw,28px);padding-block:clamp(16px,1.8vw,24px) clamp(4px,.6vw,10px);padding-inline-start:var(--gut);overflow:hidden}
 .clients-head{display:flex;align-items:center;gap:12px;padding-bottom:14px}
@@ -305,12 +333,24 @@ def fmt(n): return f'{n[:3]} {n[3:6]} {n[6:]}'
 def chip(n, label=None):
     return f'<button class="chip copy" data-copy="{n}">{COPY_SVG}{label or fmt(n)}</button>'
 
+# link previews (WhatsApp, X, etc.) need an absolute image URL; change this when the site moves to its own domain
+SITE_URL = 'https://fasjah1212-lgtm.github.io/alhabib-website/'
+
 def head(title, desc, full):
     t = f'<title>{title}</title>'
     common = f'''<meta name="description" content="{desc}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
-<meta property="og:image" content="img/hero.jpg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="مصنع الحبيب للزجاج والألمنيوم">
+<meta property="og:locale" content="ar_SA">
+<meta property="og:image" content="{SITE_URL}img/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="شعار مصنع الحبيب للزجاج والألمنيوم">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{SITE_URL}img/og.jpg">
 <meta name="theme-color" content="#DA1F26">
 <link rel="icon" href="{FAV}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -544,12 +584,26 @@ def page_index(full):
 </section>
 
 <section class="sig" id="works">
-  <div class="sig-img"><img class="par-sig" src="img/tent.jpg" alt="خيمة زجاجية بالكامل في الصحراء مضاءة من الداخل" loading="lazy"></div>
-  <div class="wrap sig-in">
-    <div><h2>من الخيال إلى الواقع</h2><p style="margin-top:10px;opacity:.85">من أعمالنا المنجزة</p></div>
-    <div><p>خيمة زجاجية بالكامل بتصميم استثنائي. فكرة غير مألوفة، هندسة دقيقة، وتنفيذ يطابق الخيال.</p>
+  <div class="wrap sig-head">
+    <div><h2>من الخيال إلى الواقع</h2><p class="sig-sub">من أعمالنا المنجزة</p></div>
+    <p>خيمة زجاجية بالكامل بتصميم استثنائي. فكرة غير مألوفة، هندسة دقيقة، وتنفيذ يطابق الخيال.</p>
+  </div>
+  <div class="wrap">
+    <div class="cmp" id="cmp">
+      <div class="cmp-media clip">
+        <img class="cmp-img" src="img/tent-real.jpg" srcset="img/tent-real-960.jpg 960w, img/tent-real.jpg 1672w" sizes="(max-width:700px) 134vw, (max-width:1440px) 100vw, 1440px" width="1672" height="941" alt="بعد التنفيذ: جلسة زجاجية مثمنة بإطارات ألمنيوم داكنة على تراس عند الغروب" loading="lazy" decoding="async" draggable="false">
+        <div class="cmp-before"><img class="cmp-img" src="img/tent-plan.jpg" srcset="img/tent-plan-960.jpg 960w, img/tent-plan.jpg 1672w" sizes="(max-width:700px) 134vw, (max-width:1440px) 100vw, 1440px" width="1672" height="941" alt="قبل التنفيذ: المخطط الهندسي للجلسة الزجاجية نفسها" loading="lazy" decoding="async" draggable="false"></div>
+        <span class="cmp-tag cmp-tag-b" dir="rtl">قبل التنفيذ</span>
+        <span class="cmp-tag cmp-tag-a" dir="rtl">بعد التنفيذ</span>
+      </div>
+      <div class="cmp-line" aria-hidden="true"></div>
+      <div class="cmp-knob" role="slider" tabindex="0" dir="rtl" aria-label="قارن بين المخطط والتنفيذ النهائي" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="المخطط ٥٠٪، التنفيذ ٥٠٪"><span class="cmp-k"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+    </div>
+    <p class="cmp-hint">اسحب المقبض يمينًا للمخطط، ويسارًا للتنفيذ النهائي</p>
+    <div class="sig-foot">
       <div class="promise"><span>جودة في التنفيذ</span><span>دقة في التفاصيل</span><span>سرعة في التسليم</span></div>
-      <div style="margin-top:26px"><a class="btn btn-line" href="works.html">كل أعمالنا <span class="arrow">←</span></a></div></div>
+      <a class="btn btn-line" href="works.html">كل أعمالنا <span class="arrow">←</span></a>
+    </div>
   </div>
 </section>
 

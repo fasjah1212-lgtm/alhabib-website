@@ -244,7 +244,10 @@ base = re.sub(r'\n  \.pin\{overflow-x:auto;[^\n]*\n  \.pin::-webkit-scrollbar\{d
 open(os.path.join(OUT, 'site.css'), 'w').write(base + EXTRA_CSS)
 
 WA = '966530868800'
-BOOK = 'https://masatech-habib-factory.odoo.com/calendar/mw-d-stshr-m-1'
+# every "book a consultation" button opens WhatsApp with the message ready to send (user decision 2026-09-28;
+# it used to open the Odoo calendar at https://masatech-habib-factory.odoo.com/calendar/mw-d-stshr-m-1)
+from urllib.parse import quote as _q
+BOOK = f'https://wa.me/{WA}?text=' + _q('حجز استشارة')
 FIX = 'https://masatech-habib-factory.odoo.com/fix'
 COMPLAIN = 'https://masatech-habib-factory.odoo.com/complaints'
 PORTAL = 'https://masatech-habib-factory.odoo.com/portal-employees'

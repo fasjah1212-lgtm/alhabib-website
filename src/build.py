@@ -1,5 +1,5 @@
 # Builds the multi-page Alhabib site from shared parts.
-import os, re, shutil
+import os, re, shutil, struct
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out'); os.makedirs(OUT, exist_ok=True)
 
@@ -121,7 +121,7 @@ EXTRA_CSS += r'''
 .clients-view:focus-visible{outline:3px solid #fff;outline-offset:-3px;border-radius:0 18px 0 18px}
 .clients-track{list-style:none;margin:0;padding:0;display:flex;gap:clamp(10px,1.2vw,16px);width:max-content;will-change:transform}
 .client{flex:none;width:clamp(138px,13vw,188px);height:clamp(74px,6.6vw,96px);display:grid;place-items:center;background:#fff;border-radius:0 18px 0 18px;box-shadow:0 12px 24px -16px rgba(60,6,8,.55)}
-.client img{max-width:76%;max-height:64%;width:auto;height:auto;object-fit:contain;pointer-events:none}
+.client img{max-width:80%;max-height:64%;width:auto;height:auto;object-fit:contain;pointer-events:none}
 .client.txt span{color:var(--ink);font-weight:800;font-size:clamp(.82rem,1vw,.98rem);line-height:1.35;text-align:center;padding-inline:10px}
 @media (max-width:700px){.clients{grid-template-columns:1fr;padding-inline-start:0;row-gap:4px}.clients-head{padding-inline:var(--gut);padding-bottom:0;justify-content:space-between}
   .clients-view{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 6%,#000 94%,transparent);mask-image:linear-gradient(to left,transparent 0,#000 6%,#000 94%,transparent)}}
@@ -449,13 +449,22 @@ def client_logo(slug):
     for ext in ('svg', 'png', 'webp', 'jpg'):
         if os.path.exists(os.path.join(CLIENT_DIR, f'{slug}.{ext}')): return f'{slug}.{ext}'
 
+# optical sizing: every logo gets about the same visual area on its tile, so a square mark and a long
+# wordmark read as equals. width is a % of the tile, from the logo's aspect ratio (PNG header), capped by the CSS box.
+LOGO_WEIGHT = {'watania': .92, 'goldentulip': 1.1}
+def logo_width(f, slug):
+    if not f.endswith('.png'): return ''
+    with open(os.path.join(CLIENT_DIR, f), 'rb') as fh: w, h = struct.unpack('>II', fh.read(24)[16:24])
+    px = (4400 * LOGO_WEIGHT.get(slug, 1) * w / h) ** .5  # on a 188px-wide tile
+    return f' style="width:{min(80, px / 188 * 100):.1f}%"'
+
 def clients_strip():
     def tiles(dup):
         out = ''
         for slug, name in CLIENTS:
             f = client_logo(slug)
             hid = ' aria-hidden="true"' if dup else ''
-            inner = f'<img src="img/clients/{f}" alt="{"" if dup else name}" draggable="false" decoding="async">' if f else f'<span>{name}</span>'
+            inner = f'<img src="img/clients/{f}" alt="{"" if dup else name}"{logo_width(f, slug)} draggable="false" decoding="async">' if f else f'<span>{name}</span>'
             out += f'<li class="client{"" if f else " txt"}"{hid}>{inner}</li>'
         return out
     return f'''<section class="clients" aria-labelledby="clientsTitle">

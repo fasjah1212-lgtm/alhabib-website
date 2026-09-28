@@ -381,6 +381,15 @@ footer{background:var(--ink);color:#d9d2cc;padding-block:70px 40px;padding-botto
 .hero-iso:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:999px}
 .hero-strip div{padding-top:clamp(40px,4vw,50px)}
 #iso{scroll-margin-top:72px}
+/* hero clip: the house moves through the day as the page scrolls (site.js adds .scrub) */
+.hero-img img{object-position:50% 50%;transform:none;animation:none;transform-origin:50% 55%}
+.hero-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;opacity:0;transition:opacity .6s var(--ease)}
+.hero-vid.on{opacity:1}
+.hero-track{position:relative}
+.hero-track.scrub{background:var(--red)}
+.hero-track.scrub .hero{position:sticky;min-height:100vh;min-height:100svh}
+.hero-held .wa{transform:translateY(calc(-1 * var(--hold-lift, 0px)))}
+@media print{.hero-track{height:auto!important;background:none}.hero-track .hero{position:relative!important;top:auto!important}.hero-vid{display:none}}
 /* top clients: white logo tiles drifting along the red band under the hero */
 .clients{background:var(--red);color:#fff;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:clamp(14px,2vw,28px);padding-block:clamp(16px,1.8vw,24px) clamp(4px,.6vw,10px);padding-inline-start:var(--gut);overflow:hidden}
 .clients-head{display:flex;align-items:center;gap:12px;padding-bottom:14px}

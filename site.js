@@ -2,6 +2,14 @@
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var G = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
   if (G) gsap.registerPlugin(ScrollTrigger);
+  // html has scroll-behavior:smooth; flush it to auto before ScrollTrigger measures, or Chromium's scrollTo(0)
+  // during a refresh never lands and every trigger below ends up offset by the current scroll
+  if (G){
+    var sbWas = null;
+    ScrollTrigger.addEventListener('refreshInit', function(){ var d = document.documentElement; if (sbWas === null) sbWas = d.style.scrollBehavior; d.style.scrollBehavior = 'auto'; d.offsetHeight; });
+    ScrollTrigger.addEventListener('refresh', function(){ if (sbWas !== null){ document.documentElement.style.scrollBehavior = sbWas; sbWas = null; } });
+  }
+  var heroEnd = 0; // where the home hero lets go of the page (set by the hero clip block)
 
   var loader = document.getElementById('loader'), started = false;
   function go(){ if (started) return; started = true; if (loader) loader.classList.add('done'); intro(); }
@@ -18,7 +26,7 @@
   }
 
   var nav = document.getElementById('nav');
-  function ns(){ if (nav) nav.classList.toggle('solid', scrollY > 60); }
+  function ns(){ if (nav) nav.classList.toggle('solid', scrollY > heroEnd + 60); }
   addEventListener('scroll', ns, {passive:true}); ns();
   var drawer = document.getElementById('drawer'), mb = document.getElementById('menuBtn');
   if (drawer && mb){
@@ -35,6 +43,127 @@
       try { navigator.clipboard.writeText(v).then(ok, fb); } catch(e){ fb(); }
     });
   });
+
+  // home hero: the house moves through the day only as the page scrolls. The hero sticks while the
+  // page scrolls through an extra stretch, and that stretch drives the clip's time (eased, so wheel
+  // steps glide). Until the clip arrives the still photo eases in with the same scroll, so the stretch is
+  // never frozen. Reduced motion, Save-Data, no JS, or a clip that cannot play here keep the still photo
+  // and a normal-length page.
+  var heroScrub = false;
+  (function(){
+    var track = document.getElementById('heroTrack'), hero = track && track.querySelector('.hero'), v = hero && hero.querySelector('.hero-vid');
+    if (!v || reduce) return;
+    var cn = navigator.connection;
+    if (cn && (cn.saveData || /(^|-)2g$/.test(cn.effectiveType || ''))) return;
+    heroScrub = true;
+    track.classList.add('scrub');
+    var root = document.documentElement, base = hero.querySelector('.hero-base'), still = hero.querySelector('.hero-img img');
+    // a 100svh probe: the small viewport does not change when mobile toolbars slide, so nothing jumps
+    var probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;top:0;left:0;width:0;height:100vh;height:100svh;visibility:hidden;pointer-events:none';
+    track.appendChild(probe);
+    var dur = 10, vh = 0, h = 0, T = 0, top = 0, extra = 1, start = 0, p = 0, target = 0, cur = 0, raf = 0, last = 0,
+        ready = false, shown = false, dead = false, quit = false, asked = false, seen = '', url = '', blobs = {};
+    function measure(){
+      if (dead) return;
+      vh = probe.offsetHeight || innerHeight; h = hero.offsetHeight; top = Math.min(0, vh - h);
+      // a hero taller than the screen sticks with its info strip on screen, unless the strip would leave
+      // too little of the house (landscape phones, deep zoom): then it sticks at the top and the strip follows
+      if (top < 0 && vh - (nav ? nav.offsetHeight : 0) - (base ? base.offsetHeight : 0) < vh * 0.45) top = 0;
+      extra = Math.round(vh * (innerWidth < innerHeight ? 1.3 : 1.6));
+      hero.style.top = top + 'px';
+      track.style.height = (h + extra) + 'px';
+      T = track.getBoundingClientRect().top + scrollY;
+      start = T - top; // scroll position where the hero starts to stick
+      heroEnd = start + extra;
+      if (base) root.style.setProperty('--hold-lift', (base.offsetHeight + 14) + 'px');
+      var key = [innerWidth, vh, h, top, extra].join('x');
+      if (key !== seen){ seen = key; if (G) ScrollTrigger.refresh(); }
+      if (asked) pick();
+      onScroll(); ns();
+    }
+    function onScroll(){
+      if (dead) return;
+      var y = scrollY;
+      if (quit && y <= start) return off();
+      p = (y - start) / extra; p = p < 0 ? 0 : p > 1 ? 1 : p;
+      target = p * (dur - 0.05);
+      if (!shown && still) still.style.transform = 'scale(' + (1 + p * 0.07).toFixed(4) + ')';
+      // phones: while the info strip sits over the bottom corner, lift the WhatsApp button above it
+      var ht = y < start ? T - y : top - Math.max(0, y - start - extra), sb = ht + h, ih = innerHeight;
+      root.classList.toggle('hero-held', innerWidth <= 900 && sb > ih - 90 && sb - (base ? base.offsetHeight : 0) < ih);
+      if (ready && !raf){ last = 0; raf = requestAnimationFrame(tick); }
+    }
+    function tick(now){
+      raf = 0;
+      var dt = last ? Math.min(64, now - last) : 16.7; last = now;
+      var d = target - cur;
+      cur = Math.abs(d) < 0.004 ? target : cur + d * (1 - Math.pow(0.82, dt / 16.7));
+      if (!v.seeking && Math.abs(v.currentTime - cur) > 0.004) v.currentTime = cur;
+      if (cur !== target || v.seeking) raf = requestAnimationFrame(tick);
+    }
+    // the clip cannot play here: back to the still photo and a normal-length page. Done while the visitor is
+    // above the hero's hold (or before the page is scrolled) so the page does not jump under them.
+    function off(){
+      if (dead) return;
+      var y = scrollY;
+      if (y > start){ quit = true; return; }
+      dead = true; heroScrub = false; heroEnd = 0;
+      track.style.height = ''; hero.style.top = ''; v.classList.remove('on'); root.classList.remove('hero-held');
+      if (still) still.style.transform = '';
+      removeEventListener('scroll', onScroll); removeEventListener('resize', measure);
+      if (G) ScrollTrigger.refresh();
+      ns();
+    }
+    function prime(){ var pr; try { pr = v.play(); } catch(e){} if (pr && pr.then) pr.then(function(){ v.pause(); }, function(){}); }
+    // iOS Low Power Mode refuses muted play() without a gesture and then loads nothing: retry on each tap until the clip is in
+    function retry(){
+      if (ready || dead){ removeEventListener('touchend', retry); removeEventListener('click', retry); return; }
+      if (v.getAttribute('src')) prime();
+    }
+    addEventListener('touchend', retry, {passive:true}); addEventListener('click', retry);
+    v.addEventListener('loadeddata', function(){
+      if (ready || dead) return;
+      dur = v.duration && isFinite(v.duration) ? v.duration : 10;
+      ready = true; v.pause(); cur = target; v.currentTime = cur; onScroll();
+    });
+    v.addEventListener('seeked', function(){
+      if (!ready || shown) return;
+      shown = true; v.classList.add('on');
+      if (still) setTimeout(function(){ still.style.transform = ''; }, 700); // under the clip by then
+    });
+    v.addEventListener('error', function(){
+      if ((v.getAttribute('src') || '').indexOf('blob:') === 0) return use(url); // a page that refuses blob: media streams the file instead
+      if (v.getAttribute('src')) off();
+    });
+    function use(src){ ready = false; shown = false; v.classList.remove('on'); v.preload = 'auto'; v.src = src; v.load(); prime(); }
+    // portrait phones get a centre crop; the choice follows rotation
+    function pick(){
+      var want = v.getAttribute(innerWidth / innerHeight < 0.76 ? 'data-src-m' : 'data-src');
+      if (want === url) return;
+      url = want;
+      if (blobs[url]) return use(blobs[url]);
+      // the clip is small, so fetch it once and seek from memory: no range requests while scrubbing
+      if (window.fetch && location.protocol !== 'file:'){
+        var u = url;
+        fetch(u).then(function(r){ if (!r.ok) throw r.status; return r.blob(); })
+          .then(function(b){ blobs[u] = URL.createObjectURL(b); if (u === url) use(blobs[u]); }, function(){ if (u === url) use(u); });
+      } else use(url);
+    }
+    // start loading once the still photo is in (it is the first paint), not after every image on the page;
+    // a clip that has not arrived 25 s later is given up
+    function begin(){
+      if (asked || dead) return; asked = true; pick();
+      setTimeout(function(){ if (!ready) off(); }, 25000);
+    }
+    measure();
+    addEventListener('scroll', onScroll, {passive:true});
+    addEventListener('resize', measure);
+    if (window.ResizeObserver) new ResizeObserver(function(){ measure(); }).observe(hero);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    if (still && !still.complete) still.addEventListener('load', begin, {once:true}); else begin();
+    addEventListener('load', function(){ measure(); begin(); });
+  })();
 
   // products strip: native scroll with buttons (no pinning, so no jump at the page end)
   var pin = document.getElementById('pin'), prog = document.getElementById('prog');
@@ -288,6 +417,6 @@
   gsap.utils.toArray('.par-sig').forEach(function(el){
     gsap.fromTo(el, {yPercent:-6}, {yPercent:6, ease:'none', scrollTrigger:{trigger:el.parentNode, start:'top bottom', end:'bottom top', scrub:true}});
   });
-  if (document.querySelector('.hero-img img')) gsap.to('.hero-img img', {yPercent:12, ease:'none', scrollTrigger:{trigger:'.hero', start:'top top', end:'bottom top', scrub:true}});
+  if (!heroScrub && document.querySelector('.hero-img img')) gsap.to('.hero-img img', {yPercent:12, ease:'none', scrollTrigger:{trigger:'.hero', start:'top top', end:'bottom top', scrub:true}});
   addEventListener('load', function(){ ScrollTrigger.refresh(); });
 })();

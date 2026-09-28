@@ -107,6 +107,15 @@ EXTRA_CSS += r'''
 .hero-iso:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:999px}
 .hero-strip div{padding-top:clamp(40px,4vw,50px)}
 #iso{scroll-margin-top:72px}
+/* hero clip: the house moves through the day as the page scrolls (site.js adds .scrub) */
+.hero-img img{object-position:50% 50%;transform:none;animation:none;transform-origin:50% 55%}
+.hero-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;opacity:0;transition:opacity .6s var(--ease)}
+.hero-vid.on{opacity:1}
+.hero-track{position:relative}
+.hero-track.scrub{background:var(--red)}
+.hero-track.scrub .hero{position:sticky;min-height:100vh;min-height:100svh}
+.hero-held .wa{transform:translateY(calc(-1 * var(--hold-lift, 0px)))}
+@media print{.hero-track{height:auto!important;background:none}.hero-track .hero{position:relative!important;top:auto!important}.hero-vid{display:none}}
 /* top clients: white logo tiles drifting along the red band under the hero */
 .clients{background:var(--red);color:#fff;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:clamp(14px,2vw,28px);padding-block:clamp(16px,1.8vw,24px) clamp(4px,.6vw,10px);padding-inline-start:var(--gut);overflow:hidden}
 .clients-head{display:flex;align-items:center;gap:12px;padding-bottom:14px}
@@ -384,6 +393,7 @@ def iso_block():
       <div class="iso-list">{items}</div></div></section>'''
 
 # product cards that swap their photo for a clip that plays on hover (key -> first-frame still, clip)
+HERO_VID = ('house-scrub.mp4', 'house-scrub-m.mp4')  # home hero, scrubbed by scroll (site.js)
 HOVER_VID = {'doors': ('door-first.jpg', 'door-open.mp4'), 'windows': ('window-first.jpg', 'window-open.mp4'), 'facades': ('facade-first.jpg', 'facade-build.mp4'), 'cladding': ('cladding-first.jpg', 'cladding-build.mp4'), 'skylights': ('skylight-first.jpg', 'skylight-cycle.mp4'), 'domes': ('dome-first.jpg', 'dome-cycle.mp4'), 'glass': ('glass-first.jpg', 'glass-showcase.mp4')}
 
 def prod_cards():
@@ -482,8 +492,9 @@ def page_index(full):
     b += header('index.html')
     hero_iso = ''.join(f'<img src="img/{f}" alt="شهادة {c}" width="92" height="92">' for f, c, _ in ISO)
     b += f'''<main id="main">
+<div class="hero-track" id="heroTrack">
 <section class="hero">
-  <div class="hero-img"><img src="img/hero.jpg" alt="فيلا حديثة بواجهات زجاجية وإطارات ألمنيوم عند الغروب" fetchpriority="high"></div>
+  <div class="hero-img"><img src="img/house-first.jpg" srcset="img/house-first-960.jpg 960w, img/house-first.jpg 1672w" sizes="(max-aspect-ratio: 16/9) 178vh, 100vw" width="1672" height="942" alt="فيلا حديثة بواجهات زجاجية وإطارات ألمنيوم" fetchpriority="high"><video class="hero-vid" muted playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1" data-src="vid/house-scrub.mp4" data-src-m="vid/house-scrub-m.mp4"></video></div>
   <img class="saudi" src="img/saudi.png" alt="صناعة سعودية" width="130" height="56">
   <div class="wrap" style="width:100%">
     <div class="hero-copy">
@@ -505,6 +516,7 @@ def page_index(full):
     </div>
   </div>
 </section>
+</div>
 {clients_strip()}
 
 <section class="sec" id="about">
@@ -683,6 +695,8 @@ for d in (ART, STAND):
     for slug, _ in CLIENTS:
         if client_logo(slug): shutil.copy(os.path.join(CLIENT_DIR, client_logo(slug)), cd)
     for _, clip in HOVER_VID.values():
+        shutil.copy(os.path.join(HERE, 'vid', clip), vd)
+    for clip in HERO_VID:
         shutil.copy(os.path.join(HERE, 'vid', clip), vd)
     if VIDEOS:
         for v in VIDEOS:

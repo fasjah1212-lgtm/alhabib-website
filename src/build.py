@@ -145,6 +145,12 @@ EXTRA_CSS += r'''
 @media (max-width:700px){.cmp{--k:50px}.cmp-media{aspect-ratio:4/3}.cmp-tag{font-size:.85rem;padding:6px 12px}}
 @media print{.cmp-line,.cmp-knob,.cmp-hint{display:none}}
 
+/* branches: the name is a link to the branch on Google Maps */
+.maplink{display:inline-flex;align-items:center;gap:8px;color:inherit;text-decoration:underline;text-decoration-color:rgba(218,31,38,.35);text-decoration-thickness:2px;text-underline-offset:6px;transition:color .2s var(--ease),text-decoration-color .2s var(--ease)}
+.maplink svg{color:var(--red);flex:none;transition:transform .3s var(--ease)}
+.maplink:hover,.maplink:focus-visible{color:var(--red);text-decoration-color:var(--red)}
+.maplink:hover svg{transform:translateY(-3px)}
+
 /* top clients: white logo tiles drifting along the red band under the hero */
 .clients{background:var(--red);color:#fff;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:clamp(14px,2vw,28px);padding-block:clamp(16px,1.8vw,24px) clamp(4px,.6vw,10px);padding-inline-start:var(--gut);overflow:hidden}
 .clients-head{display:flex;align-items:center;gap:12px;padding-bottom:14px}
@@ -329,6 +335,16 @@ BRANCHES = [
   ('حائل', 'فرع حائل', 'للتواصل عبر خط المبيعات الموحد', ['0530868800'], False),
 ]
 
+# each branch name opens Google Maps. Until the factory sends each branch's exact pin link, the link searches
+# the factory's name with the branch and city; paste a maps.app.goo.gl link into MAPS to pin one exactly.
+from urllib.parse import quote
+MAPS = {}
+def map_url(city, name):
+    if name in MAPS: return MAPS[name]
+    area = 'المدينة الصناعية الأولى بريدة' if name == 'المقر الرئيسي والمصنع' else f"{name.replace('فرع ', '')} {city}".replace(f'{city} {city}', city)
+    return 'https://www.google.com/maps/search/?api=1&query=' + quote(f'مصنع الحبيب للزجاج والألمنيوم {area}')
+PIN_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>'
+
 def fmt(n): return f'{n[:3]} {n[3:6]} {n[6:]}'
 def chip(n, label=None):
     return f'<button class="chip copy" data-copy="{n}">{COPY_SVG}{label or fmt(n)}</button>'
@@ -450,7 +466,7 @@ def prod_cards():
 def branches_block():
     rows = ''
     for city, name, note, phones, hq in BRANCHES:
-        rows += f'''<div class="branch"><div><span class="city">{city}</span><h3>{name}</h3>{f'<p class="note">{note}</p>' if note else ''}</div>{'<span class="tag">المقر</span>' if hq else '<span></span>'}
+        rows += f'''<div class="branch"><div><span class="city">{city}</span><h3><a class="maplink" href="{map_url(city, name)}" target="_blank" rel="noopener" aria-label="{name}، افتح الموقع في خرائط قوقل">{name}{PIN_SVG}</a></h3>{f'<p class="note">{note}</p>' if note else ''}</div>{'<span class="tag">المقر</span>' if hq else '<span></span>'}
           <div class="phones">{''.join(chip(p) for p in phones)}</div></div>'''
     mp = '''<div class="map" aria-label="خريطة مواقع الفروع">
         <svg viewBox="0 0 600 400">
@@ -668,7 +684,7 @@ def page_services(full):
 
 def page_branches(full):
     b = head('مواقع الفروع · مصنع الحبيب', 'فروع مصنع الحبيب في القصيم والرياض وبريدة وحائل مع أرقام التواصل.', full) + header('branches.html')
-    b += f'''<main id="main">{phero("مواقع الفروع", "من مصنعنا في القصيم إلى معارضنا في الرياض وبريدة وحائل. اضغط على أي رقم لنسخه.", "hero.jpg", "فيلا بواجهات زجاجية", "مواقع الفروع")}
+    b += f'''<main id="main">{phero("مواقع الفروع", "من مصنعنا في القصيم إلى معارضنا في الرياض وبريدة وحائل. اضغط اسم الفرع لتفتح موقعه في خرائط قوقل، أو الرقم لنسخه.", "hero.jpg", "فيلا بواجهات زجاجية", "مواقع الفروع")}
 <section class="sec"><div class="wrap"><h2 class="sr">الفروع وأرقامها</h2>{branches_block()}</div></section></main>'''
     return b + cta() + footer(full)
 

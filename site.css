@@ -419,6 +419,12 @@ footer{background:var(--ink);color:#d9d2cc;padding-block:70px 40px;padding-botto
 @media (max-width:700px){.cmp{--k:50px}.cmp-media{aspect-ratio:4/3}.cmp-tag{font-size:.85rem;padding:6px 12px}}
 @media print{.cmp-line,.cmp-knob,.cmp-hint{display:none}}
 
+/* branches: the name is a link to the branch on Google Maps */
+.maplink{display:inline-flex;align-items:center;gap:8px;color:inherit;text-decoration:underline;text-decoration-color:rgba(218,31,38,.35);text-decoration-thickness:2px;text-underline-offset:6px;transition:color .2s var(--ease),text-decoration-color .2s var(--ease)}
+.maplink svg{color:var(--red);flex:none;transition:transform .3s var(--ease)}
+.maplink:hover,.maplink:focus-visible{color:var(--red);text-decoration-color:var(--red)}
+.maplink:hover svg{transform:translateY(-3px)}
+
 /* top clients: white logo tiles drifting along the red band under the hero */
 .clients{background:var(--red);color:#fff;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:clamp(14px,2vw,28px);padding-block:clamp(16px,1.8vw,24px) clamp(4px,.6vw,10px);padding-inline-start:var(--gut);overflow:hidden}
 .clients-head{display:flex;align-items:center;gap:12px;padding-bottom:14px}

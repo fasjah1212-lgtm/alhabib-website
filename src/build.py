@@ -117,14 +117,15 @@ EXTRA_CSS += r'''
 .hero-held .wa{transform:translateY(calc(-1 * var(--hold-lift, 0px)))}
 @media print{.hero-track{height:auto!important;background:none}.hero-track .hero{position:relative!important;top:auto!important}.hero-vid{display:none}}
 /* from imagination to reality: the plan and the finished work stacked; dragging the line changes only which part shows (site.js "compare") */
-.sig{display:block;min-height:0;background:#17110F;padding-block:clamp(64px,8vw,120px) clamp(56px,7vw,104px)}
+.sig{display:block;min-height:0;background:var(--cream);color:var(--ink);padding-block:clamp(20px,3vw,44px) clamp(64px,8vw,110px)}
 .sig::before{content:none}
 .sig-head{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(18px,4vw,56px);align-items:end;margin-bottom:clamp(26px,3.5vw,48px)}
-.sig-head h2{margin-top:0;line-height:1.15;text-wrap:balance}
-.sig-head>p{color:rgba(255,255,255,.8);max-width:44ch;font-size:1.1rem}
-.sig-sub{margin-top:12px;color:rgba(255,255,255,.62)}
+.sig-head h2{margin-top:0;line-height:1.15;text-wrap:balance;color:var(--ink)}
+.sig-head>p{color:var(--ink-2);max-width:44ch;font-size:1.1rem}
+.sig-sub{margin-top:12px;color:var(--red-deep);font-weight:700}
+.sig .promise span{border-color:rgba(31,26,23,.16);background:#fff;color:var(--ink);backdrop-filter:none}
 .cmp{position:relative;direction:ltr;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-y;cursor:ew-resize;--k:56px}
-.cmp-media{position:relative;aspect-ratio:1672/941;max-height:84vh;max-height:84svh;overflow:hidden;background:#EDEBE7;border-radius:0 clamp(28px,4vw,64px) 0 clamp(28px,4vw,64px);box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.cmp-media{position:relative;aspect-ratio:1672/941;max-height:84vh;max-height:84svh;overflow:hidden;background:#EDEBE7;border-radius:0 clamp(28px,4vw,64px) 0 clamp(28px,4vw,64px);box-shadow:0 30px 60px -34px rgba(90,40,20,.45)}
 .cmp-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;pointer-events:none;-webkit-user-drag:none}
 .cmp-before{position:absolute;inset:0;-webkit-clip-path:inset(0 50% 0 0);clip-path:inset(0 50% 0 0)}
 .cmp-tag{position:absolute;top:clamp(12px,2vw,24px);padding:7px 16px;border-radius:0 14px 0 14px;font-weight:700;font-size:.92rem;line-height:1.6;pointer-events:none;transition:opacity .3s var(--ease)}
@@ -136,8 +137,8 @@ EXTRA_CSS += r'''
 .cmp-knob:hover .cmp-k{background:var(--red-deep)}
 .cmp.dragging,.cmp.dragging .cmp-knob{cursor:grabbing}
 .cmp.dragging .cmp-k{transform:scale(1.08);background:var(--red-deep)}
-.cmp-knob:focus-visible .cmp-k{box-shadow:0 0 0 3px #17110F,0 0 0 6px #fff}
-.cmp-hint{margin-top:16px;text-align:center;color:rgba(255,255,255,.6);font-size:.95rem}
+.cmp-knob:focus-visible .cmp-k{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--ink)}
+.cmp-hint{margin-top:16px;text-align:center;color:var(--ink-2);font-size:.95rem}
 .sig-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px 24px;margin-top:clamp(26px,3vw,40px)}
 .sig-foot .promise{margin-top:0}
 @media (max-width:900px){.sig-head{grid-template-columns:1fr;align-items:start}}
@@ -272,8 +273,7 @@ PRODUCTS = [
 ]
 
 WORKS = [
-  ('tent.jpg', 'خيمة زجاجية بالكامل', 'خيام زجاجية', 'tent'),
-  ('tentb.jpg', 'جلسة داخل الخيمة الزجاجية', 'خيام زجاجية', 'tent'),
+  ('tent.jpg', 'جلسة زجاجية مثمنة على تراس', 'خيام زجاجية', 'tent'),
   ('hero.jpg', 'فيلا بواجهات زجاجية', 'واجهات', 'facade'),
   ('facade.jpg', 'برج بستائر زجاجية', 'واجهات', 'facade'),
   ('cladding.jpg', 'مبنى بكسوة كلادينج', 'كلادينج', 'cladding'),
@@ -602,12 +602,12 @@ def page_index(full):
     <p class="cmp-hint">اسحب المقبض يمينًا للمخطط، ويسارًا للتنفيذ النهائي</p>
     <div class="sig-foot">
       <div class="promise"><span>جودة في التنفيذ</span><span>دقة في التفاصيل</span><span>سرعة في التسليم</span></div>
-      <a class="btn btn-line" href="works.html">كل أعمالنا <span class="arrow">←</span></a>
+      <a class="btn btn-red" href="works.html">كل أعمالنا <span class="arrow">←</span></a>
     </div>
   </div>
 </section>
 
-{iso_block()}
+{iso_block().replace('class="sec cream" id="iso"','class="sec" id="iso"')}
 
 <section class="sec">
   <div class="wrap">

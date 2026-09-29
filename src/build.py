@@ -384,7 +384,7 @@ def header(active):
     links = ''.join(link(h, l, True) for h, l in NAV)
     dlinks = ''.join(link(h, l, False) for h, l in NAV)
     return f'''<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
-<header class="nav" id="nav">
+<header class="nav float" id="nav">
   <div class="wrap nav-in">
     <a href="index.html" class="logo" aria-label="مصنع الحبيب للزجاج والألمنيوم، الرئيسية"><img src="img/logo.svg" alt="مصنع الحبيب alhabib factory" width="155" height="52"></a>
     <nav class="links" aria-label="القائمة الرئيسية">{links}</nav>

@@ -58,7 +58,7 @@ p{margin:0}
 @keyframes pulse{50%{opacity:.55}}
 
 /* nav */
-/* top bar: a white bar across the top on arrival; once the page scrolls it lifts off into a floating bar that follows */
+/* top bar: one floating bar, the same at the top of the page and while scrolling */
 .nav{position:fixed;top:0;inset-inline:0;z-index:50;padding-top:env(safe-area-inset-top,0px);background:rgba(255,255,255,.97);box-shadow:0 1px 0 var(--line);transition:top .5s var(--ease),inset .5s var(--ease),border-radius .5s var(--ease),box-shadow .5s var(--ease),background .5s}
 .nav.float{top:calc(10px + env(safe-area-inset-top,0px));inset-inline:clamp(10px,2vw,28px);padding-top:0;border-radius:0 26px 0 26px;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 0 0 1px var(--line),0 22px 44px -22px rgba(31,26,23,.45);animation:navPop .7s var(--ease)}
 @keyframes navPop{from{transform:translateY(calc(-100% - 20px));opacity:.4}to{transform:none;opacity:1}}

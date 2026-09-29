@@ -26,9 +26,8 @@
   }
 
   var nav = document.getElementById('nav');
-  // the bar sits across the top on arrival and lifts into a floating bar once the page moves
-  function ns(){ if (nav) nav.classList.toggle('float', scrollY > 90); }
-  addEventListener('scroll', ns, {passive:true}); ns();
+  // the top bar always floats (same shape at the top of the page and while scrolling)
+  function ns(){}
   var drawer = document.getElementById('drawer'), mb = document.getElementById('menuBtn');
   if (drawer && mb){
     mb.addEventListener('click', function(){ drawer.hidden = false; mb.setAttribute('aria-expanded','true'); });

@@ -26,7 +26,8 @@
   }
 
   var nav = document.getElementById('nav');
-  function ns(){ if (nav) nav.classList.toggle('solid', scrollY > heroEnd + 60); }
+  // the bar sits across the top on arrival and lifts into a floating bar once the page moves
+  function ns(){ if (nav) nav.classList.toggle('float', scrollY > 90); }
   addEventListener('scroll', ns, {passive:true}); ns();
   var drawer = document.getElementById('drawer'), mb = document.getElementById('menuBtn');
   if (drawer && mb){
@@ -76,7 +77,6 @@
       T = track.getBoundingClientRect().top + scrollY;
       start = T - top; // scroll position where the hero starts to stick
       heroEnd = start + extra;
-      if (base) root.style.setProperty('--hold-lift', (base.offsetHeight + 14) + 'px');
       var key = [innerWidth, vh, h, top, extra].join('x');
       if (key !== seen){ seen = key; if (G) ScrollTrigger.refresh(); }
       if (asked) pick();
@@ -89,9 +89,6 @@
       p = (y - start) / extra; p = p < 0 ? 0 : p > 1 ? 1 : p;
       target = p * (dur - 0.05);
       if (!shown && still) still.style.transform = 'scale(' + (1 + p * 0.07).toFixed(4) + ')';
-      // phones: while the info strip sits over the bottom corner, lift the WhatsApp button above it
-      var ht = y < start ? T - y : top - Math.max(0, y - start - extra), sb = ht + h, ih = innerHeight;
-      root.classList.toggle('hero-held', innerWidth <= 900 && sb > ih - 90 && sb - (base ? base.offsetHeight : 0) < ih);
       if (ready && !raf){ last = 0; raf = requestAnimationFrame(tick); }
     }
     function tick(now){
@@ -109,7 +106,7 @@
       var y = scrollY;
       if (y > start){ quit = true; return; }
       dead = true; heroScrub = false; heroEnd = 0;
-      track.style.height = ''; hero.style.top = ''; v.classList.remove('on'); root.classList.remove('hero-held');
+      track.style.height = ''; hero.style.top = ''; v.classList.remove('on');
       if (still) still.style.transform = '';
       removeEventListener('scroll', onScroll); removeEventListener('resize', measure);
       if (G) ScrollTrigger.refresh();
@@ -252,16 +249,37 @@
     }
   })();
 
-  // products strip: native scroll with buttons (no pinning, so no jump at the page end)
+  // products strip: native scroll; a mouse can grab it and throw it sideways (touch already swipes)
   var pin = document.getElementById('pin'), prog = document.getElementById('prog');
   if (pin){
-    document.querySelectorAll('.scroll-ctl button').forEach(function(b){
-      b.addEventListener('click', function(){
-        var card = pin.querySelector('.pcard, .track > *'), w = card ? card.getBoundingClientRect().width + 24 : pin.clientWidth * .8;
-        // RTL: moving "next" means scrolling toward negative scrollLeft
-        pin.scrollBy({left: parseInt(b.getAttribute('data-dir'), 10) * w, behavior: reduce ? 'auto' : 'smooth'});
-      });
+    var dx0 = 0, sl0 = 0, down = false, moved = false, vx = 0, lx = 0, lt = 0, glide = 0;
+    pin.addEventListener('pointerdown', function(e){
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      cancelAnimationFrame(glide); down = true; moved = false; dx0 = lx = e.clientX; sl0 = pin.scrollLeft; vx = 0; lt = performance.now();
     });
+    addEventListener('pointermove', function(e){
+      if (!down) return;
+      var d = e.clientX - dx0;
+      if (!moved && Math.abs(d) > 5){ moved = true; pin.classList.add('drag'); }
+      if (!moved) return;
+      e.preventDefault();
+      var now = performance.now(); vx = (e.clientX - lx) / Math.max(1, now - lt); lx = e.clientX; lt = now;
+      pin.scrollLeft = sl0 - d;
+    });
+    addEventListener('pointerup', function(){
+      if (!down) return; down = false;
+      if (!moved) return;
+      var v = vx * 16;
+      function step(){
+        v *= .94; pin.scrollLeft -= v;
+        if (Math.abs(v) > .4 && !reduce) glide = requestAnimationFrame(step);
+        else pin.classList.remove('drag');
+      }
+      if (reduce) pin.classList.remove('drag'); else glide = requestAnimationFrame(step);
+    });
+    // a drag must not also open the card it started on
+    pin.addEventListener('click', function(e){ if (moved){ e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    pin.addEventListener('dragstart', function(e){ e.preventDefault(); });
     if (prog) pin.addEventListener('scroll', function(){ var m = pin.scrollWidth - pin.clientWidth; prog.style.transform = 'scaleX(' + (.08 + (m > 0 ? Math.abs(pin.scrollLeft)/m : 0)*.92) + ')'; }, {passive:true});
   }
 
@@ -327,29 +345,25 @@
     }
   });
 
-  // top clients strip: drifts on its own; hovering, keyboard focus or the pause button stop it, and it can be
-  // dragged (mouse or finger) or moved with the arrow keys. With reduced motion it starts paused.
+  // top clients strip: drifts on its own; holding it with a finger or the mouse, hovering or keyboard focus stop it,
+  // and it can be dragged or moved with the arrow keys. With reduced motion it starts still.
   (function(){
     var view = document.querySelector('.clients-view'); if (!view) return;
-    var track = view.querySelector('.clients-track'), btn = document.querySelector('.clients-pause');
+    var track = view.querySelector('.clients-track');
     var items = track.children, half = track.querySelectorAll('.client:not([aria-hidden])').length;
     var W = 0, x = 0, speed = 34, last = 0, hover = false, focus = false, seen = true, drag = null, resumeAt = 0, nudge = 0;
     var paused = reduce;
     function measure(){ W = Math.abs(items[0].offsetLeft - items[half].offsetLeft); }
     function paint(){ if (W) x = ((x % W) + W) % W; track.style.transform = 'translate3d(' + x.toFixed(2) + 'px,0,0)'; }
-    function setBtn(){
-      btn.setAttribute('aria-pressed', paused ? 'true' : 'false');
-    }
     function tick(t){
       var dt = last ? Math.min(t - last, 64) / 1000 : 0; last = t;
       if (nudge){ var step = nudge * Math.min(1, dt * 9); if (Math.abs(nudge - step) < .5) step = nudge; nudge -= step; x += step; paint(); }
       else if (!paused && !hover && !focus && !drag && seen && t > resumeAt){ x += speed * dt; paint(); }
       requestAnimationFrame(tick);
     }
-    measure(); paint(); setBtn();
+    measure(); paint();
     window.addEventListener('resize', function(){ var r = W ? x / W : 0; measure(); x = r * W; paint(); });
     if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ seen = es[0].isIntersecting; }).observe(view);
-    btn.addEventListener('click', function(){ paused = !paused; setBtn(); });
     view.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') hover = true; });
     view.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') hover = false; });
     // only keyboard focus holds it still: a mouse press on the strip focuses it too, and it should keep drifting after a drag

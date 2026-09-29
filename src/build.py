@@ -8,30 +8,27 @@ EXTRA_CSS = r'''
 .pin{overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-block:10px 30px}
 .pin::-webkit-scrollbar{display:none}
 .card{scroll-snap-align:start}
-.scroll-ctl{display:flex;gap:10px}
-.scroll-ctl button{width:52px;height:52px;border-radius:0 18px 0 18px;border:1.5px solid var(--line-2);display:grid;place-items:center;font-size:1.3rem;transition:all .3s}
-.scroll-ctl button:hover{background:var(--red);border-color:var(--red);color:#fff}
-.links a.on{color:inherit}
-.links a.on::after{transform:scaleX(1)}
-.nav.solid .links a.on{color:var(--red)}
+/* products strip: drag sideways with the mouse (touch scrolls natively) */
+@media (hover:hover) and (pointer:fine){.pin{cursor:grab}.pin.drag{cursor:grabbing;scroll-snap-type:none}.pin.drag a{pointer-events:none}}
+.pin img{-webkit-user-drag:none;user-select:none}
 /* page hero */
 .phero{position:relative;min-height:min(62svh,620px);display:flex;align-items:flex-end;color:#fff;overflow:hidden;isolation:isolate;background:#2a2320}
 .phero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;animation:kb 22s ease-in-out infinite alternate}
 .phero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(270deg,rgba(20,14,12,.85),rgba(20,14,12,.35) 60%,rgba(20,14,12,.15)),linear-gradient(0deg,rgba(20,14,12,.6),transparent 50%)}
 .phero .wrap{width:100%;padding-block:150px 64px}
-.crumbs{display:flex;gap:10px;font-size:.95rem;color:rgba(255,255,255,.8)}
+.crumbs{display:flex;gap:10px;font-size:var(--fs-sm);color:rgba(255,255,255,.8)}
 .crumbs a:hover{color:#fff;text-decoration:underline;text-underline-offset:6px}
-.phero h1{font-size:clamp(2.6rem,6vw,5rem);font-weight:900;margin-top:14px}
+.phero h1{font-size:var(--fs-3xl);font-weight:900;margin-top:14px}
 .phero h1::after{content:"";display:block;width:80px;height:6px;background:var(--red);margin-top:20px;border-radius:0 6px 0 6px}
-.phero p{margin-top:18px;max-width:52ch;font-size:1.15rem;color:rgba(255,255,255,.88)}
+.phero p{margin-top:18px;max-width:52ch;font-size:var(--fs-md);color:rgba(255,255,255,.88)}
 /* product rows */
 .prod{display:grid;grid-template-columns:1.15fr 1fr;gap:clamp(30px,5vw,90px);align-items:center;padding-block:clamp(50px,7vw,100px);border-bottom:1px solid var(--line)}
 .prod:nth-child(even) .frame{order:2}
-.prod h2{font-size:clamp(2rem,3.6vw,3.2rem)}
+.prod h2{font-size:var(--fs-2xl)}
 .prod h2::after{content:"";display:block;width:64px;height:5px;background:var(--red);margin-top:16px;border-radius:0 5px 0 5px}
-.prod p{margin-top:20px;color:var(--ink-2);max-width:50ch;font-size:1.08rem}
+.prod p{margin-top:20px;color:var(--ink-2);max-width:50ch;font-size:var(--fs-md)}
 .uses{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
-.uses li{padding:8px 16px;background:var(--cream);border-radius:0 14px 0 14px;font-weight:500;font-size:.95rem}
+.uses li{padding:8px 16px;background:var(--cream);border-radius:0 14px 0 14px;font-weight:500;font-size:var(--fs-sm)}
 .prod .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
 /* works */
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
@@ -43,42 +40,42 @@ EXTRA_CSS = r'''
 .work img{width:100%;height:auto;transition:transform 1.2s var(--ease)}
 .work:hover img{transform:scale(1.06)}
 .work figcaption{position:absolute;inset-inline:14px;bottom:14px;background:rgba(255,255,255,.95);padding:10px 16px;border-radius:0 14px 0 14px;display:flex;justify-content:space-between;gap:10px;font-weight:700}
-.work figcaption span{color:var(--red-deep);font-weight:500;font-size:.88rem}
+.work figcaption span{color:var(--red-deep);font-weight:500;font-size:var(--fs-xs)}
 /* ISO */
 .iso{display:grid;grid-template-columns:1fr 2fr;gap:clamp(30px,5vw,80px);align-items:center}
 .iso-list{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .iso-item{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:26px 16px;background:var(--white);border-radius:var(--leaf) 0 var(--leaf) 0;box-shadow:0 24px 44px -34px rgba(31,26,23,.35)}
 .iso-item img{width:min(150px,80%);height:auto;transition:transform .8s var(--ease)}
 .iso-item:hover img{transform:rotate(-8deg) scale(1.05)}
-.iso-item b{font-size:1.05rem}
-.iso-item span{color:var(--ink-2);font-size:.92rem}
+.iso-item b{font-size:var(--fs-md)}
+.iso-item span{color:var(--ink-2);font-size:var(--fs-sm)}
 .foot-iso{display:flex;gap:10px;margin-top:22px}
 .foot-iso img{width:58px;height:58px;background:#fff;border-radius:50%}
 /* process */
 .proc{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line-2)}
 .proc div{padding:30px 24px 10px;border-inline-start:1px solid var(--line-2)}
 .proc div:first-child{border-inline-start:0;padding-inline-start:0}
-.proc i{font-style:normal;font-family:var(--mono);color:var(--red-deep);font-size:1rem}
-.proc b{display:block;font-size:1.25rem;margin-top:8px}
-.proc p{color:var(--ink-2);margin-top:8px;font-size:.95rem}
+.proc i{font-style:normal;font-family:var(--mono);color:var(--red-deep);font-size:var(--fs-base)}
+.proc b{display:block;font-size:var(--fs-lg);margin-top:8px}
+.proc p{color:var(--ink-2);margin-top:8px;font-size:var(--fs-sm)}
 /* forms */
 .form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .form .full{grid-column:1/-1}
-.form label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.95rem}
+.form label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:var(--fs-sm)}
 .form input,.form select,.form textarea{font:inherit;font-weight:400;padding:14px 16px;border:1.5px solid var(--line-2);border-radius:0 14px 0 14px;background:#fff;color:var(--ink);transition:border-color .3s}
 .form input:focus,.form select:focus,.form textarea:focus{outline:none;border-color:var(--red)}
 .form textarea{min-height:130px;resize:vertical}
-.form .err{color:var(--red-deep);font-size:.85rem;font-weight:500;min-height:1.2em}
+.form .err{color:var(--red-deep);font-size:var(--fs-xs);font-weight:500;min-height:1.2em}
 .form-done{grid-column:1/-1;background:var(--cream);padding:20px 22px;border-radius:0 20px 0 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
 .panel{background:var(--white);border-radius:0 var(--leaf) 0 var(--leaf);padding:clamp(24px,4vw,48px);box-shadow:0 30px 60px -40px rgba(31,26,23,.35)}
 .contact-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:clamp(30px,5vw,70px);align-items:start}
 .cinfo{display:grid;gap:14px}
 .cinfo div{padding:22px 24px;background:var(--cream);border-radius:0 24px 0 24px}
-.cinfo dt{font-size:.85rem;color:var(--ink-2)}
-.cinfo dd{margin:4px 0 0;font-size:1.3rem;font-weight:800}
+.cinfo dt{font-size:var(--fs-xs);color:var(--ink-2)}
+.cinfo dd{margin:4px 0 0;font-size:var(--fs-lg);font-weight:800}
 .band{background:var(--ink);color:#fff;border-radius:0 var(--leaf) 0 var(--leaf);padding:clamp(30px,5vw,70px);display:grid;grid-template-columns:1.3fr 1fr;gap:30px;align-items:center;overflow:hidden;position:relative;isolation:isolate}
 .band::after{content:"";position:absolute;inset:0;left:auto;width:50%;z-index:-1;background:url("img/cladding.jpg") center/cover;opacity:.35;mask-image:linear-gradient(90deg,#000,transparent)}
-.band h2{font-size:clamp(1.9rem,4vw,3.2rem);font-weight:900}
+.band h2{font-size:var(--fs-2xl);font-weight:900}
 .band p{color:#d9d2cc;margin-top:12px;max-width:46ch}
 @media (max-width:900px){
   .prod,.iso,.contact-grid,.band{grid-template-columns:1fr}
@@ -114,21 +111,20 @@ EXTRA_CSS += r'''
 .hero-track{position:relative}
 .hero-track.scrub{background:var(--red)}
 .hero-track.scrub .hero{position:sticky;min-height:100vh;min-height:100svh}
-.hero-held .wa{transform:translateY(calc(-1 * var(--hold-lift, 0px)))}
 @media print{.hero-track{height:auto!important;background:none}.hero-track .hero{position:relative!important;top:auto!important}.hero-vid{display:none}}
 /* from imagination to reality: the plan and the finished work stacked; dragging the line changes only which part shows (site.js "compare") */
 .sig{display:block;min-height:0;background:var(--cream);color:var(--ink);padding-block:clamp(20px,3vw,44px) clamp(64px,8vw,110px)}
 .sig::before{content:none}
 .sig-head{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(18px,4vw,56px);align-items:end;margin-bottom:clamp(26px,3.5vw,48px)}
 .sig-head h2{margin-top:0;line-height:1.15;text-wrap:balance;color:var(--ink)}
-.sig-head>p{color:var(--ink-2);max-width:44ch;font-size:1.1rem}
+.sig-head>p{color:var(--ink-2);max-width:44ch;font-size:var(--fs-md)}
 .sig-sub{margin-top:12px;color:var(--red-deep);font-weight:700}
 .sig .promise span{border-color:rgba(31,26,23,.16);background:#fff;color:var(--ink);backdrop-filter:none}
 .cmp{position:relative;direction:ltr;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-y;cursor:ew-resize;--k:56px}
 .cmp-media{position:relative;aspect-ratio:1672/941;max-height:84vh;max-height:84svh;overflow:hidden;background:#EDEBE7;border-radius:0 clamp(28px,4vw,64px) 0 clamp(28px,4vw,64px);box-shadow:0 30px 60px -34px rgba(90,40,20,.45)}
 .cmp-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;pointer-events:none;-webkit-user-drag:none}
 .cmp-before{position:absolute;inset:0;-webkit-clip-path:inset(0 50% 0 0);clip-path:inset(0 50% 0 0)}
-.cmp-tag{position:absolute;top:clamp(12px,2vw,24px);padding:7px 16px;border-radius:0 14px 0 14px;font-weight:700;font-size:.92rem;line-height:1.6;pointer-events:none;transition:opacity .3s var(--ease)}
+.cmp-tag{position:absolute;top:clamp(12px,2vw,24px);padding:7px 16px;border-radius:0 14px 0 14px;font-weight:700;font-size:var(--fs-sm);line-height:1.6;pointer-events:none;transition:opacity .3s var(--ease)}
 .cmp-tag-b{left:clamp(12px,2vw,24px);background:#fff;color:var(--ink);box-shadow:0 8px 20px -10px rgba(31,26,23,.35)}
 .cmp-tag-a{right:clamp(12px,2vw,24px);background:var(--red);color:#fff;box-shadow:0 8px 20px -10px rgba(0,0,0,.5)}
 .cmp-line{position:absolute;top:0;bottom:0;left:0;width:3px;margin-left:-1.5px;background:var(--red);box-shadow:0 0 0 1px rgba(255,255,255,.35);pointer-events:none;will-change:transform;transform:translate3d(0,0,0)}
@@ -138,11 +134,11 @@ EXTRA_CSS += r'''
 .cmp.dragging,.cmp.dragging .cmp-knob{cursor:grabbing}
 .cmp.dragging .cmp-k{transform:scale(1.08);background:var(--red-deep)}
 .cmp-knob:focus-visible .cmp-k{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--ink)}
-.cmp-hint{margin-top:16px;text-align:center;color:var(--ink-2);font-size:.95rem}
+.cmp-hint{margin-top:16px;text-align:center;color:var(--ink-2);font-size:var(--fs-sm)}
 .sig-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px 24px;margin-top:clamp(26px,3vw,40px)}
 .sig-foot .promise{margin-top:0}
 @media (max-width:900px){.sig-head{grid-template-columns:1fr;align-items:start}}
-@media (max-width:700px){.cmp{--k:50px}.cmp-media{aspect-ratio:4/3}.cmp-tag{font-size:.85rem;padding:6px 12px}}
+@media (max-width:700px){.cmp{--k:50px}.cmp-media{aspect-ratio:4/3}.cmp-tag{font-size:var(--fs-xs);padding:6px 12px}}
 @media print{.cmp-line,.cmp-knob,.cmp-hint{display:none}}
 
 /* branches: the name is a link to the branch on Google Maps */
@@ -158,19 +154,14 @@ EXTRA_CSS += r'''
 /* top clients: white logo tiles drifting along the red band under the hero */
 .clients{background:var(--red);color:#fff;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:clamp(14px,2vw,28px);padding-block:clamp(16px,1.8vw,24px) clamp(4px,.6vw,10px);padding-inline-start:var(--gut);overflow:hidden}
 .clients-head{display:flex;align-items:center;gap:12px;padding-bottom:14px}
-.clients h2{margin:0;font-size:clamp(1.15rem,1.7vw,1.5rem);font-weight:800;white-space:nowrap;line-height:1.3}
-.clients-pause{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .3s,border-color .3s}
-.clients-pause:hover{background:rgba(255,255,255,.14);border-color:#fff}
-.clients-pause:focus-visible{outline:3px solid #fff;outline-offset:3px}
-.clients-pause i{width:12px;height:14px;border-inline:4px solid currentColor;box-sizing:border-box}
-.clients-pause[aria-pressed="true"] i{width:0;height:0;border-inline:0;border-block:8px solid transparent;border-left:13px solid currentColor;margin-left:3px}
+.clients h2{margin:0;font-size:var(--fs-lg);font-weight:800;white-space:nowrap;line-height:1.3}
 .clients-view{overflow:hidden;cursor:grab;touch-action:pan-y pinch-zoom;user-select:none;-webkit-user-select:none;padding-block:10px 24px;-webkit-mask-image:linear-gradient(to left,transparent 0,#000 4%,#000 90%,transparent);mask-image:linear-gradient(to left,transparent 0,#000 4%,#000 90%,transparent)}
 .clients-view.drag{cursor:grabbing}
 .clients-view:focus-visible{outline:3px solid #fff;outline-offset:-3px;border-radius:0 18px 0 18px}
 .clients-track{list-style:none;margin:0;padding:0;display:flex;gap:clamp(10px,1.2vw,16px);width:max-content;will-change:transform}
 .client{flex:none;width:clamp(138px,13vw,188px);height:clamp(74px,6.6vw,96px);display:grid;place-items:center;background:#fff;border-radius:0 18px 0 18px;box-shadow:0 12px 24px -16px rgba(60,6,8,.55)}
 .client img{max-width:80%;max-height:64%;width:auto;height:auto;object-fit:contain;pointer-events:none}
-.client.txt span{color:var(--ink);font-weight:800;font-size:clamp(.82rem,1vw,.98rem);line-height:1.35;text-align:center;padding-inline:10px}
+.client.txt span{color:var(--ink);font-weight:800;font-size:var(--fs-sm);line-height:1.35;text-align:center;padding-inline:10px}
 @media (max-width:700px){.clients{grid-template-columns:1fr;padding-inline-start:0;row-gap:4px}.clients-head{padding-inline:var(--gut);padding-bottom:0;justify-content:space-between}
   .clients-view{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 6%,#000 94%,transparent);mask-image:linear-gradient(to left,transparent 0,#000 6%,#000 94%,transparent)}}
 @media (max-width:900px){.hero-strip div{padding-top:24px}.hero-strip div:nth-child(-n+2){padding-top:clamp(36px,5vw,46px)}}
@@ -186,9 +177,9 @@ EXTRA_CSS += r'''
 .reel video,.reel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 1.2s var(--ease),filter .6s var(--ease)}
 .reel::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(20,14,12,.82),rgba(20,14,12,.1) 45%,transparent 70%)}
 .reel .cap{position:absolute;inset-inline:18px;bottom:18px;display:grid;gap:4px}
-.reel .cap b{font-size:1.12rem;line-height:1.4}
-.reel .cap span{font-size:.88rem;color:#f3e3d3;display:flex;gap:10px;align-items:center}
-.reel .cap .mono{font-size:.82rem;letter-spacing:.02em;font-style:normal}
+.reel .cap b{font-size:var(--fs-md);line-height:1.4}
+.reel .cap span{font-size:var(--fs-xs);color:#f3e3d3;display:flex;gap:10px;align-items:center}
+.reel .cap .mono{font-size:var(--fs-xs);letter-spacing:.02em;font-style:normal}
 .reel .play{position:absolute;top:16px;inset-inline-start:16px;width:48px;height:48px;border-radius:0 16px 0 16px;background:var(--red);display:grid;place-items:center;box-shadow:0 12px 24px -12px rgba(120,20,20,.8);transition:transform .5s var(--ease),background .3s}
 .reel .play svg{width:18px;height:18px;fill:#fff}
 .reel:hover{transform:translateY(-6px);box-shadow:0 44px 60px -40px rgba(31,26,23,.7)}
@@ -205,8 +196,8 @@ EXTRA_CSS += r'''
 .player .frame-v.wide{aspect-ratio:16/9;height:auto;width:min(84vw,calc((100svh - 200px) * 16 / 9))}
 .player video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
 .player figcaption{display:grid;gap:2px}
-.player figcaption b{font-size:1.2rem}
-.player figcaption span{color:#e9d9c9;font-size:.92rem}
+.player figcaption b{font-size:var(--fs-lg)}
+.player figcaption span{color:#e9d9c9;font-size:var(--fs-sm)}
 .player .x,.player .nav-b{width:52px;height:52px;border-radius:0 18px 0 18px;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.35);color:#fff;transition:background .3s,border-color .3s,transform .4s var(--ease)}
 .player .x{position:absolute;top:16px;inset-inline-end:16px;z-index:2}
 .player .x:hover,.player .nav-b:hover{background:var(--red);border-color:var(--red)}
@@ -216,7 +207,7 @@ EXTRA_CSS += r'''
 @media (max-width:700px){
   .reels{grid-template-columns:1fr 1fr;gap:12px}
   .reel .cap{inset-inline:12px;bottom:12px}
-  .reel .cap b{font-size:.98rem}
+  .reel .cap b{font-size:var(--fs-sm)}
   .reel .play{width:40px;height:40px;top:12px;inset-inline-start:12px}
   .player .stage{grid-template-columns:1fr;justify-items:center;padding-top:76px}
   .player .nav-b{display:none}
@@ -330,9 +321,9 @@ PLAYER = '''<dialog class="player" id="player" aria-label="مشغل الفيدي
 
 FILTERS = [('all', 'الكل'), ('facade', 'واجهات'), ('doors', 'أبواب ونوافذ'), ('roof', 'أسقف وقبب'), ('tent', 'خيام زجاجية'), ('cladding', 'كلادينج')]
 
-ISO = [('iso9001.png', 'ISO 9001:2015', 'نظام إدارة الجودة'),
-       ('iso14001.png', 'ISO 14001:2015', 'نظام الإدارة البيئية'),
-       ('iso45001.png', 'ISO 45001:2018', 'نظام إدارة السلامة والصحة المهنية')]
+ISO = [('iso9001.svg', 'ISO 9001:2015', 'نظام إدارة الجودة'),
+       ('iso14001.svg', 'ISO 14001:2015', 'نظام الإدارة البيئية'),
+       ('iso45001.svg', 'ISO 45001:2018', 'نظام إدارة السلامة والصحة المهنية')]
 
 BRANCHES = [
   ('القصيم', 'المقر الرئيسي والمصنع', 'المدينة الصناعية الأولى، القصيم', ['0530868800'], True),
@@ -378,19 +369,24 @@ def head(title, desc, full):
 <link rel="icon" href="{FAV}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap">
 <link rel="stylesheet" href="site.css">'''
     if full:
         return f'<!doctype html>\n<html lang="ar" dir="rtl">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n{t}\n{common}\n</head>\n<body>\n'
     return f'{t}\n<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","ar");</script>\n{common}\n'
 
 def header(active):
-    ON = ' class="on" aria-current="page"'
-    links = ''.join(f'<a href="{h}"{ON if h == active else ""}>{l}</a>' for h, l in NAV)
+    # on phones the bar keeps these three; the rest live behind the menu button
+    MOBILE = ('products.html', 'works.html', 'services.html')
+    def link(h, l, bar):
+        cls = ' '.join(c for c in ('m' if bar and h in MOBILE else '', 'on' if h == active else '') if c)
+        return f'<a href="{h}"' + (f' class="{cls}"' if cls else '') + (' aria-current="page"' if h == active else '') + f'>{l}</a>'
+    links = ''.join(link(h, l, True) for h, l in NAV)
+    dlinks = ''.join(link(h, l, False) for h, l in NAV)
     return f'''<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
 <header class="nav" id="nav">
   <div class="wrap nav-in">
-    <a href="index.html" class="logo" aria-label="مصنع الحبيب للزجاج والألمنيوم، الرئيسية"><img src="img/logo.png" alt="مصنع الحبيب alhabib factory" width="155" height="52"></a>
+    <a href="index.html" class="logo" aria-label="مصنع الحبيب للزجاج والألمنيوم، الرئيسية"><img src="img/logo.svg" alt="مصنع الحبيب alhabib factory" width="155" height="52"></a>
     <nav class="links" aria-label="القائمة الرئيسية">{links}</nav>
     <div class="nav-cta">
       <a class="btn btn-red" href="{BOOK}" target="_blank" rel="noopener">احجز استشارة</a>
@@ -400,7 +396,7 @@ def header(active):
 </header>
 <div class="drawer" id="drawer" hidden>
   <button class="x" id="menuClose" aria-label="إغلاق القائمة">×</button>
-  {links}
+  {dlinks}
 </div>
 '''
 
@@ -419,7 +415,7 @@ def footer(full):
 <footer>
   <div class="wrap">
     <div class="foot">
-      <div><a href="index.html" class="flogo"><img src="img/logo.png" alt="مصنع الحبيب"></a>
+      <div><a href="index.html" class="flogo"><img src="img/logo.svg" alt="مصنع الحبيب"></a>
         <p>مصنع الحبيب للزجاج والألمنيوم. صُنع لك ومن أجلك.. وكما تتخيل.</p>
         {SOCIAL}
         <div class="foot-iso">{iso}</div></div>
@@ -479,7 +475,7 @@ def branches_block():
     mp = '''<div class="map" aria-label="خريطة مواقع الفروع">
         <svg viewBox="0 0 600 400">
           <g stroke="rgba(31,26,23,.07)"><path d="M40 0V400M105 0V400M170 0V400M235 0V400M300 0V400M365 0V400M430 0V400M495 0V400M560 0V400M0 40H600M0 104H600M0 168H600M0 232H600M0 296H600M0 360H600"/></g>
-          <g font-family="IBM Plex Mono,monospace" font-size="9" fill="#665C56"><text x="44" y="392">40°E</text><text x="304" y="392">44°E</text><text x="564" y="392">48°E</text><text x="4" y="36">28.5°N</text><text x="4" y="356">23.5°N</text></g>
+          <g font-family="Tajawal,sans-serif" font-size="9" fill="#665C56"><text x="44" y="392">40°E</text><text x="304" y="392">44°E</text><text x="564" y="392">48°E</text><text x="4" y="36">28.5°N</text><text x="4" y="356">23.5°N</text></g>
           <path class="route" d="M150 103 Q220 120 298 177"/><path class="route" d="M298 177 Q400 200 475 283"/>
           <g font-family="Tajawal,sans-serif" fill="#1F1A17" text-anchor="middle">
             <circle cx="150" cy="103" r="7" class="ring"/><circle cx="150" cy="103" r="6" fill="#DA1F26"/>
@@ -542,8 +538,7 @@ def clients_strip():
             out += f'<li class="client{"" if f else " txt"}"{hid}>{inner}</li>'
         return out
     return f'''<section class="clients" aria-labelledby="clientsTitle">
-  <div class="clients-head"><h2 id="clientsTitle">أبرز عملائنا</h2>
-    <button type="button" class="clients-pause" aria-pressed="false" aria-label="إيقاف حركة الشريط"><i aria-hidden="true"></i></button></div>
+  <div class="clients-head"><h2 id="clientsTitle">أبرز عملائنا</h2></div>
   <div class="clients-view" tabindex="0" role="group" aria-roledescription="شريط متحرك" aria-label="شعارات أبرز عملائنا. اسحب الشريط أو استخدم الأسهم للتنقل">
     <ul class="clients-track">{tiles(False)}{tiles(True)}{tiles(True)}</ul>
   </div>
@@ -552,14 +547,14 @@ def clients_strip():
 # ---------------- pages ----------------
 def page_index(full):
     b = head('مصنع الحبيب', 'مصنع الحبيب للزجاج والألمنيوم منذ 2001: أبواب، نوافذ، واجهات، كلادينج، أسقف وقبب زجاجية. صُنع لك ومن أجلك.. وكما تتخيل', full)
-    b += '<div class="loader" id="loader" aria-hidden="true"><div style="display:grid;justify-items:center"><img src="img/logo.png" alt=""><i></i></div></div>\n'
+    b += '<div class="loader" id="loader" aria-hidden="true"><div style="display:grid;justify-items:center"><img src="img/logo.svg" alt=""><i></i></div></div>\n'
     b += header('index.html')
     hero_iso = ''.join(f'<img src="img/{f}" alt="شهادة {c}" width="92" height="92">' for f, c, _ in ISO)
     b += f'''<main id="main">
 <div class="hero-track" id="heroTrack">
 <section class="hero">
   <div class="hero-img"><img src="img/house-first.jpg" srcset="img/house-first-960.jpg 960w, img/house-first.jpg 1672w" sizes="(max-aspect-ratio: 16/9) 178vh, 100vw" width="1672" height="942" alt="فيلا حديثة بواجهات زجاجية وإطارات ألمنيوم" fetchpriority="high"><video class="hero-vid" muted playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1" data-src="vid/house-scrub.mp4" data-src-m="vid/house-scrub-m.mp4"></video></div>
-  <img class="saudi" src="img/saudi.png" alt="صناعة سعودية" width="130" height="56">
+  <img class="saudi" src="img/saudi.svg" alt="صناعة سعودية" width="130" height="58">
   <div class="wrap" style="width:100%">
     <div class="hero-copy">
       <h1 id="heroTitle"><span class="ln"><span>صناعة التغيير والابتكار</span></span><span class="ln"><span>في عالم <em>الزجاج والألمنيوم</em></span></span></h1>
@@ -601,7 +596,6 @@ def page_index(full):
 <section class="sec cream" id="products" style="padding-bottom:clamp(60px,8vw,110px)">
   <div class="wrap head">
     <div><h2 class="title">منتجات تُصنع <u>لتعيش</u></h2></div>
-    <div class="scroll-ctl"><button type="button" data-dir="1" aria-label="المنتجات السابقة">→</button><button type="button" data-dir="-1" aria-label="المنتجات التالية">←</button></div>
   </div>
   <div class="pin" id="pin"><div class="track" id="track">{prod_cards()}</div></div>
   <div class="wrap"><a class="btn btn-red" href="products.html">كل المنتجات بالتفاصيل <span class="arrow">←</span></a></div>
@@ -708,7 +702,7 @@ def page_franchise(full):
         <div><dt>نوع الامتياز</dt><dd>متعدد الوحدات</dd></div>
         <div><dt>مدة العقد</dt><dd><span class="mono">5</span> سنوات</dd></div>
         <div><dt>الرسوم الإدارية المستمرة</dt><dd class="mono">7%</dd></div>
-        <div><dt>المتطلبات</dt><dd style="font-size:1rem">سجل تجاري ساري وملاءة مالية</dd></div>
+        <div><dt>المتطلبات</dt><dd style="font-size:var(--fs-base)">سجل تجاري ساري وملاءة مالية</dd></div>
       </dl></div>
     <div class="frame clip" style="aspect-ratio:4/3"><img class="par" src="img/facade.jpg" alt="برج بواجهة زجاجية" loading="lazy"></div>
   </div>
@@ -744,12 +738,12 @@ def page_contact(full):
 <section class="sec"><div class="wrap contact-grid">
   <dl class="cinfo">
     <div><dt>المبيعات</dt><dd class="mono">053 086 8800</dd><div style="margin-top:10px">{chip('0530868800','انسخ الرقم')}</div></div>
-    <div><dt>البريد الإلكتروني</dt><dd class="mono" style="font-size:1.1rem">info@alhabibsa.com</dd><div style="margin-top:10px">{chip('info@alhabibsa.com','انسخ البريد')}</div></div>
+    <div><dt>البريد الإلكتروني</dt><dd class="mono" style="font-size:var(--fs-md)">info@alhabibsa.com</dd><div style="margin-top:10px">{chip('info@alhabibsa.com','انسخ البريد')}</div></div>
     <div><dt>المقر الرئيسي والمصنع</dt><dd>المدينة الصناعية الأولى، القصيم</dd><div style="margin-top:10px"><a class="chip" href="branches.html">كل الفروع ←</a></div></div>
     <div><dt>الحجز والخدمات</dt><dd>استشارة، صيانة، ملاحظات</dd><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="chip" href="{BOOK}" target="_blank" rel="noopener">احجز استشارة</a><a class="chip" href="{FIX}" target="_blank" rel="noopener">طلب صيانة</a></div></div>
   </dl>
   <form class="form panel wa-form" data-subject="استفسار من الموقع" novalidate>
-    <h2 class="full" style="font-size:1.8rem">أرسل لنا رسالتك</h2>
+    <h2 class="full" style="font-size:var(--fs-xl)">أرسل لنا رسالتك</h2>
     <label>الاسم<input id="c-name" name="الاسم" required autocomplete="name"><span class="err"></span></label>
     <label>رقم الجوال<input id="c-phone" name="الجوال" type="tel" inputmode="tel" required pattern="^(05|\\+9665|9665)[0-9]{{8}}$" placeholder="05xxxxxxxx" autocomplete="tel"><span class="err"></span></label>
     <label class="full">المنتج<select id="c-prod" name="المنتج">{''.join(f'<option>{n}</option>' for _, n, *_ in PRODUCTS)}<option>أخرى</option></select></label>

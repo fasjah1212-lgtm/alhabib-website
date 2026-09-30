@@ -291,6 +291,11 @@ WORKS = [  # real project photos from the factory (2026-09-30)
   ('work-goldentulip.jpg', 'فندق جولدن توليب', 'واجهات زجاجية', 'facade'),
   ('work-villa-glass.jpg', 'واجهة زجاجية لفيلا سكنية', 'واجهات زجاجية', 'facade'),
   ('work-pergola.jpg', 'برجولا ألمنيوم وأبواب سحاب', 'أسقف وأبواب', 'roof'),
+  ('work-muhaisni.jpg', 'مبنى أحمد المحيسني القابضة', 'كلادينج وشبك زخرفي', 'cladding'),
+  ('work-bestwestern.jpg', 'فندق بست ويسترن بلس', 'واجهات زجاجية', 'facade'),
+  ('work-palace.jpg', 'قصر سكني بنوافذ مقوسة', 'أبواب ونوافذ', 'doors'),
+  ('work-pattern.jpg', 'واجهة بزخارف إسلامية', 'كلادينج وواجهات', 'cladding'),
+  ('work-theeb.jpg', 'فرع ذيب لتأجير السيارات', 'كلادينج وواجهات', 'cladding'),
 ]
 import json
 _vj = os.path.join(HERE, 'videos.json')

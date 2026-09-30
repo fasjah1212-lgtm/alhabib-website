@@ -41,6 +41,16 @@ EXTRA_CSS = r'''
 .work:hover img{transform:scale(1.06)}
 .work figcaption{position:absolute;inset-inline:14px;bottom:14px;background:rgba(255,255,255,.95);padding:10px 16px;border-radius:0 14px 0 14px;display:flex;justify-content:space-between;gap:10px;font-weight:700}
 .work figcaption span{color:var(--red-deep);font-weight:500;font-size:var(--fs-xs)}
+/* follow us: each app's own mark */
+.follow{margin-top:44px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.follow span{font-weight:700;color:var(--ink-2);margin-inline-end:6px}
+.app{width:58px;height:58px;border-radius:0 18px 0 18px;display:grid;place-items:center;color:#fff;box-shadow:0 12px 24px -14px rgba(31,26,23,.55);transition:transform .45s var(--ease),box-shadow .45s var(--ease)}
+.app:hover{transform:translateY(-4px);box-shadow:0 18px 30px -14px rgba(31,26,23,.6)}
+.app svg{width:26px;height:26px;fill:currentColor}
+.app-x{background:#000}
+.app-tt{background:#000}
+.app-tt svg{overflow:visible}.app-tt .c{fill:#25F4EE;transform:translate(-1.2px,-1.2px)}.app-tt .r{fill:#FE2C55;transform:translate(1.2px,1.2px)}
+.app-ig{background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%)}
 /* ISO */
 .iso{display:grid;grid-template-columns:1fr 2fr;gap:clamp(30px,5vw,80px);align-items:center}
 .iso-list{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
@@ -276,16 +286,11 @@ PRODUCTS = [
    ['بيع بالجملة', 'بيع بالتجزئة', 'قص حسب المقاس', 'تجهيز للمشاريع']),
 ]
 
-WORKS = [
-  ('tent.jpg', 'جلسة زجاجية مثمنة على تراس', 'خيام زجاجية', 'tent'),
-  ('hero.jpg', 'فيلا بواجهات زجاجية', 'واجهات', 'facade'),
-  ('facade.jpg', 'برج بستائر زجاجية', 'واجهات', 'facade'),
-  ('cladding.jpg', 'مبنى بكسوة كلادينج', 'كلادينج', 'cladding'),
-  ('door.jpg', 'باب محوري للمدخل', 'أبواب ونوافذ', 'doors'),
-  ('window.jpg', 'نوافذ سحاب بطول الجدار', 'أبواب ونوافذ', 'doors'),
-  ('skylight.jpg', 'سقف زجاجي لصالة', 'أسقف وقبب', 'roof'),
-  ('dome.jpg', 'قبة زجاجية', 'أسقف وقبب', 'roof'),
-  ('domeb.jpg', 'القبة من الداخل', 'أسقف وقبب', 'roof'),
+WORKS = [  # real project photos from the factory (2026-09-30)
+  ('work-watania.jpg', 'مقر الدواجن الوطنية', 'كلادينج وواجهات', 'cladding'),
+  ('work-goldentulip.jpg', 'فندق جولدن توليب', 'واجهات زجاجية', 'facade'),
+  ('work-villa-glass.jpg', 'واجهة زجاجية لفيلا سكنية', 'واجهات زجاجية', 'facade'),
+  ('work-pergola.jpg', 'برجولا ألمنيوم وأبواب سحاب', 'أسقف وأبواب', 'roof'),
 ]
 import json
 _vj = os.path.join(HERE, 'videos.json')
@@ -659,13 +664,18 @@ def page_products(full):
 
 def page_works(full):
     b = head('أعمالنا · مصنع الحبيب', 'مشاريع مصنع الحبيب للزجاج والألمنيوم: واجهات، أبواب ونوافذ، أسقف وقبب، خيام زجاجية، وكلادينج.', full) + header('works.html')
-    fl = ''.join(f'<button type="button" data-f="{k}" aria-pressed="{"true" if k == "all" else "false"}">{l}</button>' for k, l in FILTERS)
+    cats = {c for *_, c in WORKS} | {v.get('cat') for v in VIDEOS}  # a filter shows only when it has work under it
+    fl = ''.join(f'<button type="button" data-f="{k}" aria-pressed="{"true" if k == "all" else "false"}">{l}</button>' for k, l in FILTERS if k == 'all' or k in cats)
     it = ''.join(f'<figure class="work" data-cat="{c}"><img src="img/{f}" alt="{t}" loading="lazy"><figcaption>{t}<span>{cl}</span></figcaption></figure>' for f, t, cl, c in WORKS)
     b += f'''<main id="main">{phero("أعمالنا", "من الخيال إلى الواقع. مشاريع نفذناها بجودة في التنفيذ ودقة في التفاصيل وسرعة في التسليم.", "tent.jpg", "خيمة زجاجية مضاءة", "أعمالنا")}
 <section class="sec"><div class="wrap">
   <div class="filters" role="group" aria-label="تصفية الأعمال">{fl}</div>
   {reels_block()}<div class="works" id="works">{it}</div>
-  <div style="margin-top:40px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-red" href="https://x.com/alhabib_fac" target="_blank" rel="noopener">المزيد على إكس</a><a class="btn btn-dark" href="https://www.instagram.com/alhabib_fac/" target="_blank" rel="noopener">إنستقرام</a><a class="btn btn-dark" href="https://www.tiktok.com/@alhabibfac" target="_blank" rel="noopener">تيك توك</a></div>
+  <div class="follow"><span>تابع جديد أعمالنا</span>
+    <a class="app app-x" href="https://x.com/alhabib_fac" target="_blank" rel="noopener" aria-label="حسابنا على إكس"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.5z"/></svg></a>
+    <a class="app app-tt" href="https://www.tiktok.com/@alhabibfac" target="_blank" rel="noopener" aria-label="حسابنا على تيك توك"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="c" d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/><path class="r" d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/><path d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/></svg></a>
+    <a class="app app-ig" href="https://www.instagram.com/alhabib_fac/" target="_blank" rel="noopener" aria-label="حسابنا على إنستقرام"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM17.3 5.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM12 2c-2.7 0-3 0-4.1.1C4.3 2.3 2.3 4.3 2.1 7.9 2 9 2 9.3 2 12s0 3 .1 4.1c.2 3.6 2.2 5.6 5.8 5.8 1.1.1 1.4.1 4.1.1s3 0 4.1-.1c3.6-.2 5.6-2.2 5.8-5.8.1-1.1.1-1.4.1-4.1s0-3-.1-4.1c-.2-3.6-2.2-5.6-5.8-5.8C15 2 14.7 2 12 2zm0 1.8c2.7 0 3 0 4 .1 2.7.1 4 1.4 4.1 4.1.1 1 .1 1.3.1 4s0 3-.1 4c-.1 2.7-1.4 4-4.1 4.1-1 .1-1.3.1-4 .1s-3 0-4-.1c-2.7-.1-4-1.4-4.1-4.1-.1-1-.1-1.3-.1-4s0-3 .1-4C4 5.3 5.3 4 8 3.9c1-.1 1.3-.1 4-.1z"/></svg></a>
+  </div>
 </div></section></main>{PLAYER if VIDEOS else ""}'''
     return b + cta() + footer(full)
 

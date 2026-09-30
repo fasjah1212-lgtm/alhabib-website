@@ -334,6 +334,16 @@ footer{background:var(--ink);color:#d9d2cc;padding-block:70px 40px;padding-botto
 .work:hover img{transform:scale(1.06)}
 .work figcaption{position:absolute;inset-inline:14px;bottom:14px;background:rgba(255,255,255,.95);padding:10px 16px;border-radius:0 14px 0 14px;display:flex;justify-content:space-between;gap:10px;font-weight:700}
 .work figcaption span{color:var(--red-deep);font-weight:500;font-size:var(--fs-xs)}
+/* follow us: each app's own mark */
+.follow{margin-top:44px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.follow span{font-weight:700;color:var(--ink-2);margin-inline-end:6px}
+.app{width:58px;height:58px;border-radius:0 18px 0 18px;display:grid;place-items:center;color:#fff;box-shadow:0 12px 24px -14px rgba(31,26,23,.55);transition:transform .45s var(--ease),box-shadow .45s var(--ease)}
+.app:hover{transform:translateY(-4px);box-shadow:0 18px 30px -14px rgba(31,26,23,.6)}
+.app svg{width:26px;height:26px;fill:currentColor}
+.app-x{background:#000}
+.app-tt{background:#000}
+.app-tt svg{overflow:visible}.app-tt .c{fill:#25F4EE;transform:translate(-1.2px,-1.2px)}.app-tt .r{fill:#FE2C55;transform:translate(1.2px,1.2px)}
+.app-ig{background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%)}
 /* ISO */
 .iso{display:grid;grid-template-columns:1fr 2fr;gap:clamp(30px,5vw,80px);align-items:center}
 .iso-list{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}

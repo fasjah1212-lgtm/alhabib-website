@@ -449,10 +449,6 @@ footer{background:var(--ink);color:#d9d2cc;padding-block:70px 40px;padding-botto
 .maplink:hover,.maplink:focus-visible{color:var(--red);text-decoration-color:var(--red)}
 .maplink:hover svg{transform:translateY(-3px)}
 
-/* the designer's signature: the last thing on every page, shown only */
-.sig-mark{display:flex;justify-content:center;margin-top:34px}
-.sig-mark img{width:auto;height:44px;opacity:.5;pointer-events:none;user-select:none;-webkit-user-drag:none}
-
 /* top clients: white logo tiles drifting along the red band under the hero */
 .clients{background:var(--red);color:#fff;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:clamp(14px,2vw,28px);padding-block:clamp(16px,1.8vw,24px) clamp(4px,.6vw,10px);padding-inline-start:var(--gut);overflow:hidden}
 .clients-head{display:flex;align-items:center;gap:12px;padding-bottom:14px}

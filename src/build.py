@@ -331,20 +331,21 @@ ISO = [('iso9001.svg', 'ISO 9001:2015', 'نظام إدارة الجودة'),
        ('iso14001.svg', 'ISO 14001:2015', 'نظام الإدارة البيئية'),
        ('iso45001.svg', 'ISO 45001:2018', 'نظام إدارة السلامة والصحة المهنية')]
 
-BRANCHES = [
-  ('القصيم', 'المقر الرئيسي والمصنع', 'المدينة الصناعية الأولى، القصيم', ['0530868800'], True),
-  ('الرياض', 'فرع الياسمين', '', ['0501438000', '0532787000', '0530591000'], False),
-  ('الرياض', 'فرع مخرج 17', '', ['0537463000'], False),
-  ('بريدة', 'فرع الدائري الشمالي', '', ['0534264000', '0504629000'], False),
-  ('حائل', 'فرع حائل', 'للتواصل عبر خط المبيعات الموحد', ['0530868800'], False),
+from urllib.parse import quote
+BRANCHES = [  # city, name, note, phones, is_hq, (lat, lon), maps link
+  ('القصيم', 'المقر الرئيسي والمصنع', 'المدينة الصناعية الأولى، القصيم', ['0530868800'], True, (26.33, 43.97), ''),
+  ('الرياض', 'فرع الياسمين', 'مركز طيف عزيز، حي الياسمين', ['0501438000', '0532787000', '0530591000'], False, (24.822722, 46.64138), 'https://www.google.com/maps/search/?api=1&query=24.822722,46.64138'),
+  ('الرياض', 'فرع مخرج 10', 'للتواصل عبر خط المبيعات الموحد', ['0530868800'], False, (24.757677, 46.740532), 'https://www.google.com/maps/search/?api=1&query=24.757677,46.740532'),
+  ('الرياض', 'فرع مخرج 17', '', ['0537463000'], False, (24.652454, 46.787224), 'https://www.google.com/maps/search/?api=1&query=24.652454,46.787224'),
+  ('بريدة', 'فرع الدائري الشمالي', '', ['0534264000', '0504629000'], False, (26.37, 43.96), 'https://maps.app.goo.gl/LqDKbkHfdy7opApQ8'),
+  ('جدة', 'فرع جدة', 'حي السلامة، طريق قريش', ['0530868800'], False, (21.5805, 39.1762), 'https://www.google.com/maps/search/?api=1&query=' + quote('3280-3132 قريش، السلامة، جدة 23524')),
+  ('حائل', 'فرع حائل', 'للتواصل عبر خط المبيعات الموحد', ['0530868800'], False, (27.52, 41.69), ''),
 ]
 
-# each branch name opens Google Maps. Until the factory sends each branch's exact pin link, the link searches
-# the factory's name with the branch and city; paste a maps.app.goo.gl link into MAPS to pin one exactly.
-from urllib.parse import quote
-MAPS = {'فرع الدائري الشمالي': 'https://maps.app.goo.gl/LqDKbkHfdy7opApQ8'}
+# each branch name opens Google Maps: its own pin when the factory sent one, otherwise a search for the branch
 def map_url(city, name):
-    if name in MAPS: return MAPS[name]
+    for c, n, _, _, _, _, link in BRANCHES:
+        if n == name and link: return link
     area = 'المدينة الصناعية الأولى بريدة' if name == 'المقر الرئيسي والمصنع' else f"{name.replace('فرع ', '')} {city}".replace(f'{city} {city}', city)
     return 'https://www.google.com/maps/search/?api=1&query=' + quote(f'مصنع الحبيب للزجاج والألمنيوم {area}')
 PIN_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>'
@@ -474,25 +475,49 @@ def prod_cards():
 
 def branches_block():
     rows = ''
-    for city, name, note, phones, hq in BRANCHES:
-        rows += f'''<div class="branch"><div><span class="city">{city}</span><h3><a class="maplink" href="{map_url(city, name)}" target="_blank" rel="noopener" aria-label="{name}، افتح الموقع في خرائط قوقل">{name}{PIN_SVG}</a></h3>{f'<p class="note">{note}</p>' if note else ''}</div>{'<span class="tag">المقر</span>' if hq else '<span></span>'}
+    for city, name, note, phones, hq, _pt, _lk in BRANCHES:
+        rows += f'''<div class="branch"><div><span class="city">{city}</span><h3><a class="maplink" href="{map_url(city, name)}" target="_blank" rel="noopener" aria-label="{name}، افتح الموقع في خرائط قوقل">{name}{PIN_SVG}</a></h3>{f'<p class="note">{note}</p>' if note else ''}</div>
           <div class="phones">{''.join(chip(p) for p in phones)}</div></div>'''
-    mp = '''<div class="map" aria-label="خريطة مواقع الفروع">
-        <svg viewBox="0 0 600 400">
-          <g stroke="rgba(31,26,23,.07)"><path d="M40 0V400M105 0V400M170 0V400M235 0V400M300 0V400M365 0V400M430 0V400M495 0V400M560 0V400M0 40H600M0 104H600M0 168H600M0 232H600M0 296H600M0 360H600"/></g>
-          <g font-family="Tajawal,sans-serif" font-size="9" fill="#665C56"><text x="44" y="392">40°E</text><text x="304" y="392">44°E</text><text x="564" y="392">48°E</text><text x="4" y="36">28.5°N</text><text x="4" y="356">23.5°N</text></g>
-          <path class="route" d="M150 103 Q220 120 298 177"/><path class="route" d="M298 177 Q400 200 475 283"/>
-          <g font-family="Tajawal,sans-serif" fill="#1F1A17" text-anchor="middle">
-            <circle cx="150" cy="103" r="7" class="ring"/><circle cx="150" cy="103" r="6" fill="#DA1F26"/>
-            <text x="150" y="80" font-size="17" font-weight="700">حائل</text>
-            <circle cx="298" cy="177" r="8" class="ring" style="animation-delay:-.9s"/><circle cx="298" cy="177" r="9" fill="#DA1F26"/><circle cx="298" cy="177" r="3.5" fill="#fff"/>
-            <text x="298" y="150" font-size="18" font-weight="800">القصيم · بريدة</text><text x="298" y="206" font-size="11" fill="#665C56">المقر الرئيسي والمصنع</text>
-            <circle cx="475" cy="283" r="7" class="ring" style="animation-delay:-1.8s"/><circle cx="475" cy="283" r="6" fill="#DA1F26"/>
-            <text x="475" y="260" font-size="17" font-weight="700">الرياض</text><text x="475" y="308" font-size="11" fill="#665C56">فرعين</text>
-          </g>
+    return f'<div class="br">{branches_map()}<div>{rows}</div></div>'
+
+# the map draws itself from each branch's coordinates, so a new branch lands in the right place
+MAP_W, MAP_H, LON0, LAT0, PPD = 600, 462, 38.0, 28.6, 57.7
+def mxy(pt): return round((pt[1] - LON0) * PPD, 1), round((LAT0 - pt[0]) * PPD, 1)
+def branches_map():
+    cities = {}
+    for city, name, _n, _p, hq, pt, _l in BRANCHES:
+        key = 'القصيم · بريدة' if city in ('القصيم', 'بريدة') else city
+        c = cities.setdefault(key, {'n': 0, 'hq': False, 'pt': pt})
+        c['n'] += 1
+        if hq: c['hq'] = True; c['pt'] = pt
+    grid = ''.join(f'<path d="M{round((lon - LON0) * PPD, 1)} 0V{MAP_H}"/>' for lon in range(39, 49)) + \
+           ''.join(f'<path d="M0 {round((LAT0 - lat) * PPD, 1)}H{MAP_W}"/>' for lat in range(21, 29))
+    order = ['حائل', 'القصيم · بريدة', 'الرياض', 'جدة']
+    route = ''
+    for a, b in zip(order, order[1:]):
+        if a in cities and b in cities:
+            (x1, y1), (x2, y2) = mxy(cities[a]['pt']), mxy(cities[b]['pt'])
+            route += f'<path class="route" d="M{x1} {y1} Q{round((x1 + x2) / 2 + 20, 1)} {round((y1 + y2) / 2 - 10, 1)} {x2} {y2}"/>'
+    pins, i = '', 0
+    for key in order:
+        c = cities.get(key)
+        if not c: continue
+        x, y = mxy(c['pt'])
+        sub = 'المقر الرئيسي والمصنع' if c['hq'] else ('فرع واحد' if c['n'] == 1 else 'فرعان' if c['n'] == 2 else f"{c['n']} فروع")
+        r, fs, fw = (9, 18, 800) if c['hq'] else (6, 17, 700)
+        pins += (f'<circle cx="{x}" cy="{y}" r="{r - 1}" class="ring" style="animation-delay:-{i * .9}s"/>'
+                 f'<circle cx="{x}" cy="{y}" r="{r}" fill="#DA1F26"/>' + (f'<circle cx="{x}" cy="{y}" r="3.5" fill="#fff"/>' if c['hq'] else '') +
+                 f'<text x="{x}" y="{round(y - 27, 1)}" font-size="{fs}" font-weight="{fw}">{key}</text>'
+                 f'<text x="{x}" y="{round(y + 29, 1)}" font-size="11" fill="#665C56">{sub}</text>')
+        i += 1
+    return f'''<div class="map" aria-label="خريطة مواقع الفروع">
+        <svg viewBox="0 0 {MAP_W} {MAP_H}">
+          <g stroke="rgba(31,26,23,.07)">{grid}</g>
+          <g font-family="Tajawal,sans-serif" font-size="9" fill="#665C56"><text x="{round((40 - LON0) * PPD + 4, 1)}" y="{MAP_H - 8}">40°E</text><text x="{round((44 - LON0) * PPD + 4, 1)}" y="{MAP_H - 8}">44°E</text><text x="4" y="{round((LAT0 - 28) * PPD - 6, 1)}">28°N</text><text x="4" y="{round((LAT0 - 22) * PPD - 6, 1)}">22°N</text></g>
+          {route}
+          <g font-family="Tajawal,sans-serif" fill="#1F1A17" text-anchor="middle">{pins}</g>
         </svg>
       </div>'''
-    return f'<div class="br">{mp}<div>{rows}</div></div>'
 
 SVC = [
   ('<svg viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="2"/><path d="M6 20h36M20 20v22M12 13h6"/></svg>', 'خدمات ما قبل البيع', 'نزور موقعك، نقيس ونقترح الحلول المناسبة للمساحة والميزانية قبل ما تبدأ.', 'contact.html', 'تواصل مع المبيعات', False),
@@ -574,7 +599,7 @@ def page_index(full):
     <dl class="hero-strip">
       <div><dt>المقر الرئيسي</dt><dd>المدينة الصناعية الأولى، القصيم</dd></div>
       <div><dt>التخصص</dt><dd>واجهات، كلادينج، زجاج متخصص</dd></div>
-      <div><dt>الفروع</dt><dd>الرياض · بريدة · حائل</dd></div>
+      <div><dt>الفروع</dt><dd>الرياض · بريدة · جدة · حائل</dd></div>
       <div><dt>المبيعات</dt><dd class="mono">053 086 8800</dd></div>
     </dl>
     </div>
@@ -695,8 +720,8 @@ def page_services(full):
     return b + cta() + footer(full)
 
 def page_branches(full):
-    b = head('مواقع الفروع · مصنع الحبيب', 'فروع مصنع الحبيب في القصيم والرياض وبريدة وحائل مع أرقام التواصل.', full) + header('branches.html')
-    b += f'''<main id="main">{phero("مواقع الفروع", "من مصنعنا في القصيم إلى معارضنا في الرياض وبريدة وحائل. اضغط اسم الفرع لتفتح موقعه في خرائط قوقل، أو الرقم لنسخه.", "hero.jpg", "فيلا بواجهات زجاجية", "مواقع الفروع")}
+    b = head('مواقع الفروع · مصنع الحبيب', 'فروع مصنع الحبيب في القصيم والرياض وبريدة وجدة وحائل مع أرقام التواصل.', full) + header('branches.html')
+    b += f'''<main id="main">{phero("مواقع الفروع", "من مصنعنا في القصيم إلى معارضنا في الرياض وبريدة وجدة وحائل. اضغط اسم الفرع لتفتح موقعه في خرائط قوقل، أو الرقم لنسخه.", "hero.jpg", "فيلا بواجهات زجاجية", "مواقع الفروع")}
 <section class="sec"><div class="wrap"><h2 class="sr">الفروع وأرقامها</h2>{branches_block()}</div></section></main>'''
     return b + cta() + footer(full)
 

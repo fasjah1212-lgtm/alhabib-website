@@ -244,7 +244,7 @@ base = open(os.path.join(HERE, 'base.css')).read()
 base = re.sub(r'\n  \.pin\{overflow-x:auto;[^\n]*\n  \.pin::-webkit-scrollbar\{display:none\}\n  \.card\{scroll-snap-align:center;width:min\(84vw,420px\)\}', '\n  .card{width:min(84vw,420px)}', base)
 open(os.path.join(OUT, 'site.css'), 'w').write(base + EXTRA_CSS)
 
-WA = '966530868800'
+WA = '966920066276'
 # every "book a consultation" button opens WhatsApp with the message ready to send (user decision 2026-09-28;
 # it used to open the Odoo calendar at https://masatech-habib-factory.odoo.com/calendar/mw-d-stshr-m-1)
 from urllib.parse import quote as _q
@@ -333,13 +333,13 @@ ISO = [('iso9001.svg', 'ISO 9001:2015', 'نظام إدارة الجودة'),
 
 from urllib.parse import quote
 BRANCHES = [  # city, name, note, phones, is_hq, (lat, lon), maps link
-  ('القصيم', 'المقر الرئيسي والمصنع', 'المدينة الصناعية الأولى، القصيم', ['0530868800'], True, (26.33, 43.97), ''),
-  ('الرياض', 'فرع الياسمين', 'مركز طيف عزيز، حي الياسمين', ['0501438000', '0532787000', '0530591000'], False, (24.822722, 46.64138), 'https://www.google.com/maps/search/?api=1&query=24.822722,46.64138'),
-  ('الرياض', 'فرع مخرج 10', 'للتواصل عبر خط المبيعات الموحد', ['0530868800'], False, (24.757677, 46.740532), 'https://www.google.com/maps/search/?api=1&query=24.757677,46.740532'),
-  ('الرياض', 'فرع مخرج 17', '', ['0537463000'], False, (24.652454, 46.787224), 'https://www.google.com/maps/search/?api=1&query=24.652454,46.787224'),
-  ('بريدة', 'فرع الدائري الشمالي', '', ['0534264000', '0504629000'], False, (26.37, 43.96), 'https://maps.app.goo.gl/LqDKbkHfdy7opApQ8'),
-  ('جدة', 'فرع جدة', 'حي السلامة، طريق قريش', ['0530868800'], False, (21.5805, 39.1762), 'https://www.google.com/maps/search/?api=1&query=' + quote('3280-3132 قريش، السلامة، جدة 23524')),
-  ('حائل', 'فرع حائل', 'للتواصل عبر خط المبيعات الموحد', ['0530868800'], False, (27.52, 41.69), ''),
+  ('القصيم', 'المقر الرئيسي والمصنع', 'المدينة الصناعية الأولى، القصيم', ['920066276'], True, (26.33, 43.97), ''),
+  ('الرياض', 'فرع الياسمين', 'مركز طيف عزيز، حي الياسمين', ['920066276'], False, (24.822722, 46.64138), 'https://www.google.com/maps/search/?api=1&query=24.822722,46.64138'),
+  ('الرياض', 'فرع مخرج 10', 'للتواصل عبر خط المبيعات الموحد', ['920066276'], False, (24.757677, 46.740532), 'https://www.google.com/maps/search/?api=1&query=24.757677,46.740532'),
+  ('الرياض', 'فرع مخرج 17', '', ['920066276'], False, (24.652454, 46.787224), 'https://www.google.com/maps/search/?api=1&query=24.652454,46.787224'),
+  ('بريدة', 'فرع الدائري الشمالي', '', ['920066276'], False, (26.37, 43.96), 'https://maps.app.goo.gl/LqDKbkHfdy7opApQ8'),
+  ('جدة', 'فرع جدة', 'حي السلامة، طريق قريش', ['920066276'], False, (21.5805, 39.1762), 'https://www.google.com/maps/search/?api=1&query=' + quote('3280-3132 قريش، السلامة، جدة 23524')),
+  ('حائل', 'فرع حائل', 'للتواصل عبر خط المبيعات الموحد', ['920066276'], False, (27.52, 41.69), ''),
 ]
 
 # each branch name opens Google Maps: its own pin when the factory sent one, otherwise a search for the branch
@@ -448,8 +448,8 @@ def cta():
     return f'''<section class="sec" style="padding-top:0"><div class="wrap"><div class="cta">
       <div><h2>كما تتخيل.. نصنعه لك</h2><p>خبّرنا وش في بالك، والباقي علينا.</p>
         <div class="row"><a class="btn btn-white" href="https://wa.me/{WA}" target="_blank" rel="noopener">راسلنا واتساب</a><a class="btn btn-ghostw" href="contact.html">صفحة التواصل <span class="arrow">←</span></a></div></div>
-      <div><span style="opacity:.8">المبيعات</span><span class="phone">053 086 8800</span>
-        <div class="row">{chip('0530868800','انسخ الرقم').replace('class="chip copy"','class="chip copy" style="color:var(--red)"')}{chip('info@alhabibsa.com','info@alhabibsa.com').replace('class="chip copy"','class="chip copy" style="color:var(--red)"')}</div></div>
+      <div><span style="opacity:.8">المبيعات</span><span class="phone">920066276</span>
+        <div class="row">{chip('920066276','انسخ الرقم').replace('class="chip copy"','class="chip copy" style="color:var(--red)"')}{chip('info@alhabibsa.com','info@alhabibsa.com').replace('class="chip copy"','class="chip copy" style="color:var(--red)"')}</div></div>
     </div></div></section>'''
 
 def iso_block():
@@ -600,7 +600,7 @@ def page_index(full):
       <div><dt>المقر الرئيسي</dt><dd>المدينة الصناعية الأولى، القصيم</dd></div>
       <div><dt>التخصص</dt><dd>واجهات، كلادينج، زجاج متخصص</dd></div>
       <div><dt>الفروع</dt><dd>الرياض · بريدة · جدة · حائل</dd></div>
-      <div><dt>المبيعات</dt><dd class="mono">053 086 8800</dd></div>
+      <div><dt>المبيعات</dt><dd class="mono">920066276</dd></div>
     </dl>
     </div>
   </div>
@@ -768,11 +768,11 @@ def page_franchise(full):
     return b + footer(full)
 
 def page_contact(full):
-    b = head('اتصل بنا · مصنع الحبيب', 'تواصل مع مصنع الحبيب للزجاج والألمنيوم: المبيعات 053 086 8800، واتساب، والبريد info@alhabibsa.com.', full) + header('contact.html')
+    b = head('اتصل بنا · مصنع الحبيب', 'تواصل مع مصنع الحبيب للزجاج والألمنيوم: المبيعات 920066276، واتساب، والبريد info@alhabibsa.com.', full) + header('contact.html')
     b += f'''<main id="main">{phero("اتصل بنا", "خبّرنا وش في بالك، والباقي علينا.", "door.jpg", "باب محوري بمدخل مضاء", "اتصل بنا")}
 <section class="sec"><div class="wrap contact-grid">
   <dl class="cinfo">
-    <div><dt>المبيعات</dt><dd class="mono">053 086 8800</dd><div style="margin-top:10px">{chip('0530868800','انسخ الرقم')}</div></div>
+    <div><dt>المبيعات</dt><dd class="mono">920066276</dd><div style="margin-top:10px">{chip('920066276','انسخ الرقم')}</div></div>
     <div><dt>البريد الإلكتروني</dt><dd class="mono" style="font-size:var(--fs-md)">info@alhabibsa.com</dd><div style="margin-top:10px">{chip('info@alhabibsa.com','انسخ البريد')}</div></div>
     <div><dt>المقر الرئيسي والمصنع</dt><dd>المدينة الصناعية الأولى، القصيم</dd><div style="margin-top:10px"><a class="chip" href="branches.html">كل الفروع ←</a></div></div>
     <div><dt>الحجز والخدمات</dt><dd>استشارة، صيانة، ملاحظات</dd><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="chip" href="{BOOK}" target="_blank" rel="noopener">احجز استشارة</a><a class="chip" href="{FIX}" target="_blank" rel="noopener">طلب صيانة</a></div></div>

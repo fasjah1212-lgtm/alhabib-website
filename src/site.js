@@ -296,7 +296,7 @@
   });
 
   // forms: validate, then prepare a WhatsApp message to the factory
-  var WA = '966530868800';
+  var WA = '966920066276';
   document.querySelectorAll('.wa-form').forEach(function(form){
     form.addEventListener('submit', function(e){
       e.preventDefault();

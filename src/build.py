@@ -292,6 +292,23 @@ WORKS = [  # real project photos from the factory (2026-09-30)
   ('work-palace.jpg', 'قصر سكني بنوافذ مقوسة', 'أبواب ونوافذ', 'doors'),
   ('work-pattern.jpg', 'واجهة بزخارف إسلامية', 'كلادينج وواجهات', 'cladding'),
   ('work-theeb.jpg', 'فرع ذيب لتأجير السيارات', 'كلادينج وواجهات', 'cladding'),
+  # 2026-10-06 batch (social posts, brand frame and old number cropped off)
+  ('work-villa-courtyard.jpg', 'فيلا بواجهات زجاجية وحديقة', 'واجهات زجاجية', 'facade'),
+  ('work-zigzag.jpg', 'مبنى تجاري بكلادينج هندسي', 'كلادينج وواجهات', 'cladding'),
+  ('work-dome.jpg', 'قبة زجاجية مثمنة', 'قبب زجاجية', 'roof'),
+  ('work-arched-villas.jpg', 'فلل بأبواب ونوافذ مقوسة', 'أبواب ونوافذ', 'doors'),
+  ('work-curtain-wall.jpg', 'ستارة زجاجية بارتفاع المبنى', 'واجهات زجاجية', 'facade'),
+  ('work-pattern-building.jpg', 'مبنى بشبك زخرفي إسلامي', 'كلادينج وشبك زخرفي', 'cladding'),
+  ('work-bonsai.jpg', 'فناء داخلي بواجهات زجاجية', 'واجهات زجاجية', 'facade'),
+  ('work-skylight.jpg', 'منور زجاجي في سقف صالة', 'أسقف زجاجية', 'roof'),
+  ('work-wood-door.jpg', 'مدخل فيلا بباب محوري', 'أبواب وواجهات', 'doors'),
+  ('work-stone-building.jpg', 'مبنى بكسوة حجرية', 'كلادينج وواجهات', 'cladding'),
+  ('work-modern-villa.jpg', 'فيلا حديثة بواجهات زجاجية', 'واجهات زجاجية', 'facade'),
+  ('work-stair-skylight.jpg', 'منور زجاجي فوق الدرج', 'أسقف زجاجية', 'roof'),
+  ('work-residential.jpg', 'عمارة سكنية بنوافذ ألمنيوم', 'نوافذ وواجهات', 'doors'),
+  ('work-villa-corner.jpg', 'فيلا بكلادينج وواجهة زجاجية', 'كلادينج وواجهات', 'cladding'),
+  ('work-hotel-tower.jpg', 'برج بواجهات زجاجية', 'واجهات زجاجية', 'facade'),
+  ('work-atrium.jpg', 'فناء داخلي بسقف ونوافذ زجاجية', 'أسقف ونوافذ', 'roof'),
 ]
 import json
 _vj = os.path.join(HERE, 'videos.json')

@@ -843,7 +843,7 @@ def webp(html):
         else:
             src = f'srcset="img/{name}.webp"'
         return f'<picture><source type="image/webp" {src}>{m.group(0)}</picture>'
-    return re.sub(r'<img src="img/([a-z0-9-]+)\.jpg"([^>]*)>', rep, html)
+    return re.sub(r'<img (?:class="[^"]*" )?src="img/([a-z0-9-]+)\.jpg"([^>]*)>', rep, html)
 from PIL import Image
 for name, fn in PAGES.items():
     open(os.path.join(ART, name), 'w').write(webp(fn(name != 'index.html')))

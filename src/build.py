@@ -35,6 +35,7 @@ EXTRA_CSS = r'''
 .filters button{height:44px;padding-inline:20px;border-radius:0 16px 0 16px;border:1.5px solid var(--line-2);font-weight:700;transition:all .3s}
 .filters button:hover{border-color:var(--red);color:var(--red)}
 .filters button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+picture{display:contents}
 .works{columns:3 320px;column-gap:18px}
 .work{break-inside:avoid;margin:0 0 18px;position:relative;overflow:hidden;border-radius:0 var(--leaf) 0 var(--leaf);background:var(--cream-2)}
 .work img{width:100%;height:auto;transition:transform 1.2s var(--ease)}
@@ -828,7 +829,23 @@ for d in (ART, STAND):
                 src = os.path.join(v.get('dir', os.path.join(HERE, 'vid')), v['slug'] + suf)
                 assert os.path.getsize(src) <= 15e6, src + ' is over the 15 MB per-file limit'
                 shutil.copy(src, vd)
+IMG_DIR = os.path.join(HERE, '..', 'img')
+def webp(html):
+    # serve a lighter WebP of each photo where the browser takes it (same pixels, JPEG stays as fallback);
+    # project photos also get smaller widths so a phone downloads only what its screen can show
+    def rep(m):
+        name, attrs = m.group(1), m.group(2)
+        if 'srcset' in attrs or not os.path.exists(os.path.join(IMG_DIR, name + '.webp')): return m.group(0)
+        w = Image.open(os.path.join(IMG_DIR, name + '.jpg')).width
+        ss = [f'img/{name}-{v}.webp {v}w' for v in (800, 1100) if os.path.exists(os.path.join(IMG_DIR, f'{name}-{v}.webp'))]
+        if ss:
+            src = f'srcset="{", ".join(ss + [f"img/{name}.webp {w}w"])}" sizes="(max-width: 700px) 92vw, (max-width: 1040px) 46vw, 31vw"'
+        else:
+            src = f'srcset="img/{name}.webp"'
+        return f'<picture><source type="image/webp" {src}>{m.group(0)}</picture>'
+    return re.sub(r'<img src="img/([a-z0-9-]+)\.jpg"([^>]*)>', rep, html)
+from PIL import Image
 for name, fn in PAGES.items():
-    open(os.path.join(ART, name), 'w').write(fn(name != 'index.html'))
-    open(os.path.join(STAND, name), 'w').write(fn(True))
+    open(os.path.join(ART, name), 'w').write(webp(fn(name != 'index.html')))
+    open(os.path.join(STAND, name), 'w').write(webp(fn(True)))
 print('built', list(PAGES))

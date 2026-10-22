@@ -512,7 +512,7 @@
     gsap.fromTo(el, {clipPath:'inset(0 0 18% 0)'}, {clipPath:'inset(0 0 0% 0)', duration:1.4, ease:'expo.out', scrollTrigger:{trigger:el, start:'top 88%', once:true}});
   });
   gsap.utils.toArray('.par').forEach(function(img){
-    gsap.fromTo(img, {scale:1.15, yPercent:-4}, {scale:1.15, yPercent:4, ease:'none', scrollTrigger:{trigger:img.parentNode, start:'top bottom', end:'bottom top', scrub:true}});
+    gsap.fromTo(img, {scale:1.15, yPercent:-4}, {scale:1.15, yPercent:4, ease:'none', scrollTrigger:{trigger:img.closest('picture') ? img.closest('picture').parentNode : img.parentNode, start:'top bottom', end:'bottom top', scrub:true}});
   });
   gsap.utils.toArray('.par-sig').forEach(function(el){
     gsap.fromTo(el, {yPercent:-6}, {yPercent:6, ease:'none', scrollTrigger:{trigger:el.parentNode, start:'top bottom', end:'bottom top', scrub:true}});

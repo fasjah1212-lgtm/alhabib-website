@@ -1,0 +1,13 @@
+# Old addresses from the previous site keep working (Google results, ads, shared links)
+RewriteEngine On
+RewriteRule ^projects/?$ /works.html [R=301,L]
+RewriteRule ^blog/?$ /news.html [R=301,L]
+RewriteRule ^locations/?$ /branches.html [R=301,L]
+RewriteRule ^contact/?$ /contact.html [R=301,L]
+RewriteRule ^franchise/?$ /franchise.html [R=301,L]
+RewriteRule ^faq/?$ /contact.html [R=301,L]
+RewriteRule ^products/?$ /products.html [R=301,L]
+RewriteRule ^products/doors/?$ /products.html#doors [R=301,NE,L]
+RewriteRule ^products/windows/?$ /products.html#windows [R=301,NE,L]
+RewriteRule ^products/facades/?$ /products.html#facades [R=301,NE,L]
+RewriteRule ^products/skylight/?$ /products.html#skylights [R=301,NE,L]

@@ -320,6 +320,7 @@ footer{background:var(--ink);color:#d9d2cc;padding-block:70px 40px;padding-botto
 .prod h2{font-size:var(--fs-2xl)}
 .prod h2::after{content:"";display:block;width:64px;height:5px;background:var(--red);margin-top:16px;border-radius:0 5px 0 5px}
 .prod p{margin-top:20px;color:var(--ink-2);max-width:50ch;font-size:var(--fs-md)}
+.types{margin:14px 0 0;color:var(--ink-2,#444)}.types b{color:var(--red-deep)}
 .uses{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .uses li{padding:8px 16px;background:var(--cream);border-radius:0 14px 0 14px;font-weight:500;font-size:var(--fs-sm)}
 .prod .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
@@ -336,6 +337,18 @@ picture{display:contents}
 .work figcaption{position:absolute;inset-inline:14px;bottom:14px;background:rgba(255,255,255,.95);padding:10px 16px;border-radius:0 14px 0 14px;display:flex;justify-content:space-between;gap:10px;font-weight:700}
 .work figcaption span{color:var(--red-deep);font-weight:500;font-size:var(--fs-xs)}
 /* follow us: each app's own mark */
+.rvs{columns:3 300px;column-gap:18px}
+.rv{break-inside:avoid;margin:0 0 18px;padding:24px 26px;background:var(--white);border-radius:0 var(--leaf) 0 var(--leaf)}
+.rv blockquote{margin:0;font-size:var(--fs-md);line-height:1.8}
+.rv figcaption{margin-top:12px;color:#E0A100;letter-spacing:3px}
+.posts{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.post{display:flex;flex-direction:column;background:var(--cream);border-radius:0 var(--leaf) 0 var(--leaf);overflow:hidden;color:inherit;text-decoration:none;transition:transform .4s var(--ease)}
+.post:hover{transform:translateY(-4px)}
+.post img{width:100%;aspect-ratio:16/10;object-fit:cover}
+.post div{padding:20px 22px 24px;display:flex;flex-direction:column;gap:8px;flex:1}
+.post h2{margin:0;font-size:var(--fs-md);line-height:1.6}
+.post p{margin:0;color:var(--ink-2);font-size:var(--fs-sm)}
+.post .more{margin-top:auto;color:var(--red-deep);font-weight:700;font-size:var(--fs-sm)}
 .follow{margin-top:44px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .follow span{font-weight:700;color:var(--ink-2);margin-inline-end:6px}
 .app{width:58px;height:58px;border-radius:0 18px 0 18px;display:grid;place-items:center;color:#fff;box-shadow:0 12px 24px -14px rgba(31,26,23,.55);transition:transform .45s var(--ease),box-shadow .45s var(--ease)}

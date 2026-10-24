@@ -27,6 +27,7 @@ EXTRA_CSS = r'''
 .prod h2{font-size:var(--fs-2xl)}
 .prod h2::after{content:"";display:block;width:64px;height:5px;background:var(--red);margin-top:16px;border-radius:0 5px 0 5px}
 .prod p{margin-top:20px;color:var(--ink-2);max-width:50ch;font-size:var(--fs-md)}
+.types{margin:14px 0 0;color:var(--ink-2,#444)}.types b{color:var(--red-deep)}
 .uses{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .uses li{padding:8px 16px;background:var(--cream);border-radius:0 14px 0 14px;font-weight:500;font-size:var(--fs-sm)}
 .prod .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
@@ -43,6 +44,18 @@ picture{display:contents}
 .work figcaption{position:absolute;inset-inline:14px;bottom:14px;background:rgba(255,255,255,.95);padding:10px 16px;border-radius:0 14px 0 14px;display:flex;justify-content:space-between;gap:10px;font-weight:700}
 .work figcaption span{color:var(--red-deep);font-weight:500;font-size:var(--fs-xs)}
 /* follow us: each app's own mark */
+.rvs{columns:3 300px;column-gap:18px}
+.rv{break-inside:avoid;margin:0 0 18px;padding:24px 26px;background:var(--white);border-radius:0 var(--leaf) 0 var(--leaf)}
+.rv blockquote{margin:0;font-size:var(--fs-md);line-height:1.8}
+.rv figcaption{margin-top:12px;color:#E0A100;letter-spacing:3px}
+.posts{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.post{display:flex;flex-direction:column;background:var(--cream);border-radius:0 var(--leaf) 0 var(--leaf);overflow:hidden;color:inherit;text-decoration:none;transition:transform .4s var(--ease)}
+.post:hover{transform:translateY(-4px)}
+.post img{width:100%;aspect-ratio:16/10;object-fit:cover}
+.post div{padding:20px 22px 24px;display:flex;flex-direction:column;gap:8px;flex:1}
+.post h2{margin:0;font-size:var(--fs-md);line-height:1.6}
+.post p{margin:0;color:var(--ink-2);font-size:var(--fs-sm)}
+.post .more{margin-top:auto;color:var(--red-deep);font-weight:700;font-size:var(--fs-sm)}
 .follow{margin-top:44px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .follow span{font-weight:700;color:var(--ink-2);margin-inline-end:6px}
 .app{width:58px;height:58px;border-radius:0 18px 0 18px;display:grid;place-items:center;color:#fff;box-shadow:0 12px 24px -14px rgba(31,26,23,.55);transition:transform .45s var(--ease),box-shadow .45s var(--ease)}
@@ -257,7 +270,9 @@ COPY_SVG = '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx
 FAV = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M0 0h24a8 8 0 0 1 8 8v24H8a8 8 0 0 1-8-8z' fill='%23DA1F26'/%3E%3Cpath d='M11 25V9h9v5' stroke='%23fff' stroke-width='3' fill='none'/%3E%3C/svg%3E"
 
 NAV = [('index.html', 'الرئيسية'), ('products.html', 'منتجاتنا'), ('works.html', 'أعمالنا'), ('services.html', 'خدماتنا'),
-       ('branches.html', 'مواقع الفروع'), ('franchise.html', 'الامتياز التجاري'), ('contact.html', 'اتصل بنا')]
+       ('branches.html', 'مواقع الفروع'), ('news.html', 'أخبارنا'), ('franchise.html', 'الامتياز التجاري'), ('contact.html', 'اتصل بنا')]
+
+TYPES = {'doors': 'سحاب، مفصلية، محورية', 'windows': 'سحاب، قلاب، شتر، مفصلية', 'facades': 'ستركتشر، كارتن وول، سبايدر، كلادينج', 'skylights': 'هرمية، كروية، مسطحة'}  # product types listed on the factory's old site
 
 PRODUCTS = [
   ('doors', 'الأبواب', 'door.jpg', 'باب محوري من الزجاج بإطار ألمنيوم أسود',
@@ -352,12 +367,13 @@ ISO = [('iso9001.svg', 'ISO 9001:2015', 'نظام إدارة الجودة'),
 from urllib.parse import quote
 BRANCHES = [  # city, name, note, phones, is_hq, (lat, lon), maps link
   ('القصيم', 'المقر الرئيسي والمصنع', 'المدينة الصناعية الأولى، القصيم', ['920066276'], True, (26.33, 43.97), ''),
-  ('الرياض', 'فرع الياسمين', 'مركز طيف عزيز، حي الياسمين', ['920066276'], False, (24.822722, 46.64138), 'https://www.google.com/maps/search/?api=1&query=24.822722,46.64138'),
-  ('الرياض', 'فرع مخرج 10', 'للتواصل عبر خط المبيعات الموحد', ['920066276'], False, (24.757677, 46.740532), 'https://www.google.com/maps/search/?api=1&query=24.757677,46.740532'),
+  ('الرياض', 'فرع الياسمين', 'حي الياسمين، طريق الملك عبدالعزيز (مركز طيف عزيز)', ['920066276'], False, (24.822722, 46.64138), 'https://www.google.com/maps/search/?api=1&query=24.822722,46.64138'),
+  ('الرياض', 'فرع مخرج 10', 'حي القدس، مخرج 10', ['920066276'], False, (24.757677, 46.740532), 'https://www.google.com/maps/search/?api=1&query=24.757677,46.740532'),
   ('الرياض', 'فرع مخرج 17', '', ['920066276'], False, (24.652454, 46.787224), 'https://www.google.com/maps/search/?api=1&query=24.652454,46.787224'),
-  ('بريدة', 'فرع الدائري الشمالي', '', ['920066276'], False, (26.37, 43.96), 'https://maps.app.goo.gl/LqDKbkHfdy7opApQ8'),
+  ('الرياض', 'فرع حي الفاروق', 'حي الفاروق، طريق المدينة المنورة الفرعي', ['920066276'], False, (24.60, 46.66), ''),
+  ('بريدة', 'فرع الدائري الشمالي', 'مدخل مدينة الخير، الدائري الشمالي', ['920066276'], False, (26.37, 43.96), 'https://maps.app.goo.gl/LqDKbkHfdy7opApQ8'),
   ('جدة', 'فرع جدة', 'حي السلامة، طريق قريش', ['920066276'], False, (21.5805, 39.1762), 'https://www.google.com/maps/search/?api=1&query=' + quote('3280-3132 قريش، السلامة، جدة 23524')),
-  ('حائل', 'فرع حائل', 'للتواصل عبر خط المبيعات الموحد', ['920066276'], False, (27.52, 41.69), ''),
+  ('حائل', 'فرع حائل', '', ['920066276'], False, (27.52, 41.69), ''),
 ]
 
 # each branch name opens Google Maps: its own pin when the factory sent one, otherwise a search for the branch
@@ -373,7 +389,14 @@ def chip(n, label=None):
     return f'<button class="chip copy" data-copy="{n}">{COPY_SVG}{label or fmt(n)}</button>'
 
 # link previews (WhatsApp, X, etc.) need an absolute image URL; change this when the site moves to its own domain
-SITE_URL = 'https://fasjah1212-lgtm.github.io/alhabib-website/'
+SITE_URL = 'https://alhabibfactory.com/'
+# the factory's ad pixels from their old site (TikTok, X, Snapchat); they run only on alhabibfactory.com
+PIXELS = """<script>if(/(^|\\.)alhabibfactory\\.com$/.test(location.hostname)){
+!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};ttq.load('D0M5VVRC77U1CPDMFCCG');ttq.page();}(window,document,'ttq');
+!function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);},s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='https://static.ads-twitter.com/uwt.js',a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');twq('config','oo7o7');
+(function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function(){a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};a.queue=[];var s='script',r=t.createElement(s);r.async=!0;r.src=n;var u=t.getElementsByTagName(s)[0];u.parentNode.insertBefore(r,u);})(window,document,'https://sc-static.net/scevent.min.js');snaptr('init','a728dc53-1f18-44d6-a047-90025154b7c9',{});snaptr('track','PAGE_VIEW');
+}</script>"""
+
 
 def head(title, desc, full):
     t = f'<title>{title}</title>'
@@ -395,7 +418,8 @@ def head(title, desc, full):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap">
-<link rel="stylesheet" href="site.css">'''
+<link rel="stylesheet" href="site.css">
+{PIXELS}'''
     if full:
         return f'<!doctype html>\n<html lang="ar" dir="rtl">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n{t}\n{common}\n</head>\n<body>\n'
     return f'{t}\n<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","ar");</script>\n{common}\n'
@@ -431,6 +455,8 @@ SOCIAL = '''<div class="socials">
           <a href="https://www.tiktok.com/@alhabibfac" target="_blank" rel="noopener" aria-label="تيك توك"><svg viewBox="0 0 24 24"><path d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/></svg></a>
           <a href="https://www.youtube.com/@alhabib_fac/videos" target="_blank" rel="noopener" aria-label="يوتيوب"><svg viewBox="0 0 24 24"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.8 15.1V8.9L15.5 12z"/></svg></a>
           <a href="https://www.linkedin.com/company/alhabib-factory" target="_blank" rel="noopener" aria-label="لينكدإن"><svg viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.8h4V21H3zM9.5 9.8h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5c0-1.2 0-2.8-1.7-2.8s-2 1.3-2 2.7V21h-4z"/></svg></a>
+          <a href="https://www.facebook.com/people/%D9%85%D8%B5%D9%86%D8%B9-%D8%A7%D9%84%D8%AD%D8%A8%D9%8A%D8%A8-%D9%84%D9%84%D8%B2%D8%AC%D8%A7%D8%AC-%D8%A7%D9%84%D8%A3%D9%84%D9%85%D9%86%D9%8A%D9%88%D9%85/61565890143045/" target="_blank" rel="noopener" aria-label="فيسبوك"><svg viewBox="0 0 24 24"><path d="M13.5 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.6 1.6-1.6h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3v3.2h2.8V22z"/></svg></a>
+          <a href="https://snapchat.com/t/WRfeAMWX" target="_blank" rel="noopener" aria-label="سناب شات"><svg viewBox="0 0 24 24"><path d="M12 2.5c2.9 0 5.2 2.2 5.2 5.4v2.4c.5.2 1.1.1 1.6-.1.6-.2 1.1.6.5 1-.6.5-1.6.8-2.1 1.1.4 1.8 2.1 3.4 3.9 3.9.4.1.5.6.1.8-.7.4-1.6.6-2.4.7-.2.4-.1 1.1-.6 1.2-.7.1-1.5-.2-2.4 0-1.2.3-2 1.6-3.8 1.6s-2.6-1.3-3.8-1.6c-.9-.2-1.7.1-2.4 0-.5-.1-.4-.8-.6-1.2-.8-.1-1.7-.3-2.4-.7-.4-.2-.3-.7.1-.8 1.8-.5 3.5-2.1 3.9-3.9-.5-.3-1.5-.6-2.1-1.1-.6-.4-.1-1.2.5-1 .5.2 1.1.3 1.6.1V7.9c0-3.2 2.3-5.4 5.2-5.4z"/></svg></a>
         </div>'''
 
 def footer(full):
@@ -467,7 +493,7 @@ def cta():
       <div><h2>كما تتخيل.. نصنعه لك</h2><p>خبّرنا وش في بالك، والباقي علينا.</p>
         <div class="row"><a class="btn btn-white" href="https://wa.me/{WA}" target="_blank" rel="noopener">راسلنا واتساب</a><a class="btn btn-ghostw" href="contact.html">صفحة التواصل <span class="arrow">←</span></a></div></div>
       <div><span style="opacity:.8">المبيعات</span><span class="phone">920066276</span>
-        <div class="row">{chip('920066276','انسخ الرقم').replace('class="chip copy"','class="chip copy" style="color:var(--red)"')}{chip('info@alhabibsa.com','info@alhabibsa.com').replace('class="chip copy"','class="chip copy" style="color:var(--red)"')}</div></div>
+        <div class="row">{chip('920066276','انسخ الرقم').replace('class="chip copy"','class="chip copy" style="color:var(--red)"')}{chip('info@alhabibfactory.com','info@alhabibfactory.com').replace('class="chip copy"','class="chip copy" style="color:var(--red)"')}</div></div>
     </div></div></section>'''
 
 def iso_block():
@@ -700,9 +726,23 @@ def page_products(full):
                  f'<video class="par" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-src="vid/{hv[1]}"></video>') if hv else \
                 f'<img class="par" src="img/{img}" alt="{alt}" loading="lazy">'
         rows += f'''<article class="prod" id="{i}"><div class="frame clip">{media}</div>
-      <div><h2>{n}</h2><p>{desc}</p><ul class="uses">{''.join(f'<li>{u}</li>' for u in uses)}</ul>
+      <div><h2>{n}</h2><p>{desc}</p>{f'<p class="types"><b>الأنواع:</b> {TYPES[i]}</p>' if i in TYPES else ''}<ul class="uses">{''.join(f'<li>{u}</li>' for u in uses)}</ul>
         <div class="row"><a class="btn btn-red" href="https://wa.me/{WA}?text={msg.replace(' ', '%20')}" target="_blank" rel="noopener">اطلب عرض سعر</a><a class="btn btn-dark" href="{BOOK}" target="_blank" rel="noopener">احجز استشارة</a></div></div></article>'''
     b += f'<main id="main">{phero("منتجاتنا", "كل ما يحتاجه مشروعك من الزجاج والألمنيوم، سكني أو تجاري، من مصنع واحد.", "facade.jpg", "برج بواجهة زجاجية", "منتجاتنا")}<section class="sec" style="padding-top:clamp(20px,4vw,50px)"><div class="wrap">{rows}</div></section></main>'
+    return b + cta() + footer(full)
+
+REVIEWS = json.load(open(os.path.join(HERE, 'reviews.json')))  # customer reviews from the factory's old site
+NEWS = json.load(open(os.path.join(HERE, 'news.json')))  # "أخبارنا" posts from the old site, each opens its post on X
+
+def reviews_block():
+    q = ''.join(f'<figure class="rv"><blockquote>{r}</blockquote><figcaption aria-hidden="true">★★★★★</figcaption></figure>' for r in REVIEWS)
+    return f'''<section class="sec cream"><div class="wrap"><h2 class="title" style="margin-bottom:28px">تقييم <u>عملائنا</u></h2><div class="rvs">{q}</div></div></section>'''
+
+def page_news(full):
+    b = head('أخبارنا · مصنع الحبيب', 'آخر أخبار مصنع الحبيب للزجاج والألمنيوم ومنشوراته عن الواجهات والزجاج والألمنيوم.', full) + header('news.html')
+    it = ''.join(f'''<a class="post" href="{n['href']}" target="_blank" rel="noopener"><img src="img/{n['img']}" alt="" loading="lazy"><div><h2>{n['title']}</h2>{f"<p>{n['body']}</p>" if n['body'] else ''}<span class="more">اقرأ على إكس ←</span></div></a>''' for n in NEWS)
+    b += f'''<main id="main">{phero("أخبارنا", "آخر أخبار المصنع ومشاريعه، ونصائح تساعدك تختار الزجاج والألمنيوم المناسب.", "skylight.jpg", "سقف زجاجي فوق صالة", "أخبارنا")}
+<section class="sec"><div class="wrap"><div class="posts">{it}</div></div></section></main>'''
     return b + cta() + footer(full)
 
 def page_works(full):
@@ -719,7 +759,7 @@ def page_works(full):
     <a class="app app-tt" href="https://www.tiktok.com/@alhabibfac" target="_blank" rel="noopener" aria-label="حسابنا على تيك توك"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="c" d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/><path class="r" d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/><path d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/></svg></a>
     <a class="app app-ig" href="https://www.instagram.com/alhabib_fac/" target="_blank" rel="noopener" aria-label="حسابنا على إنستقرام"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM17.3 5.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM12 2c-2.7 0-3 0-4.1.1C4.3 2.3 2.3 4.3 2.1 7.9 2 9 2 9.3 2 12s0 3 .1 4.1c.2 3.6 2.2 5.6 5.8 5.8 1.1.1 1.4.1 4.1.1s3 0 4.1-.1c3.6-.2 5.6-2.2 5.8-5.8.1-1.1.1-1.4.1-4.1s0-3-.1-4.1c-.2-3.6-2.2-5.6-5.8-5.8C15 2 14.7 2 12 2zm0 1.8c2.7 0 3 0 4 .1 2.7.1 4 1.4 4.1 4.1.1 1 .1 1.3.1 4s0 3-.1 4c-.1 2.7-1.4 4-4.1 4.1-1 .1-1.3.1-4 .1s-3 0-4-.1c-2.7-.1-4-1.4-4.1-4.1-.1-1-.1-1.3-.1-4s0-3 .1-4C4 5.3 5.3 4 8 3.9c1-.1 1.3-.1 4-.1z"/></svg></a>
   </div>
-</div></section></main>{PLAYER if VIDEOS else ""}'''
+</div></section>{reviews_block()}</main>{PLAYER if VIDEOS else ""}'''
     return b + cta() + footer(full)
 
 def page_services(full):
@@ -778,6 +818,9 @@ def page_franchise(full):
     <label>المدينة<input id="fr-city" name="المدينة" required><span class="err"></span></label>
     <label>رقم الجوال<input id="fr-phone" name="الجوال" type="tel" inputmode="tel" required pattern="^(05|\\+9665|9665)[0-9]{{8}}$" placeholder="05xxxxxxxx" autocomplete="tel"><span class="err"></span></label>
     <label>البريد الإلكتروني<input id="fr-email" name="البريد" type="email" autocomplete="email"><span class="err"></span></label>
+    <label class="full">النشاط التجاري (إن وجد)<input id="fr-biz" name="النشاط التجاري"></label>
+    <label>هل لديك موقع تجاري جاهز؟<select id="fr-site" name="موقع تجاري جاهز"><option>نعم</option><option>لا</option></select></label>
+    <label>هل تتوفر لديك خبرة؟<select id="fr-exp" name="خبرة سابقة"><option>نعم</option><option>لا</option></select></label>
     <label class="full">رأس المال المتوقع<select id="fr-cap" name="رأس المال"><option>300,000 – 500,000 ر.س</option><option>500,000 – 750,000 ر.س</option><option>أكثر من 750,000 ر.س</option></select></label>
     <label class="full">ملاحظات<textarea id="fr-msg" name="ملاحظات"></textarea></label>
     <div class="full"><button class="btn btn-red" type="submit">جهّز الطلب</button></div>
@@ -786,12 +829,12 @@ def page_franchise(full):
     return b + footer(full)
 
 def page_contact(full):
-    b = head('اتصل بنا · مصنع الحبيب', 'تواصل مع مصنع الحبيب للزجاج والألمنيوم: المبيعات 920066276، واتساب، والبريد info@alhabibsa.com.', full) + header('contact.html')
+    b = head('اتصل بنا · مصنع الحبيب', 'تواصل مع مصنع الحبيب للزجاج والألمنيوم: المبيعات 920066276، واتساب، والبريد info@alhabibfactory.com.', full) + header('contact.html')
     b += f'''<main id="main">{phero("اتصل بنا", "خبّرنا وش في بالك، والباقي علينا.", "door.jpg", "باب محوري بمدخل مضاء", "اتصل بنا")}
 <section class="sec"><div class="wrap contact-grid">
   <dl class="cinfo">
     <div><dt>المبيعات</dt><dd class="mono">920066276</dd><div style="margin-top:10px">{chip('920066276','انسخ الرقم')}</div></div>
-    <div><dt>البريد الإلكتروني</dt><dd class="mono" style="font-size:var(--fs-md)">info@alhabibsa.com</dd><div style="margin-top:10px">{chip('info@alhabibsa.com','انسخ البريد')}</div></div>
+    <div><dt>البريد الإلكتروني</dt><dd class="mono" style="font-size:var(--fs-md)">info@alhabibfactory.com</dd><div style="margin-top:10px">{chip('info@alhabibfactory.com','انسخ البريد')}</div></div>
     <div><dt>المقر الرئيسي والمصنع</dt><dd>المدينة الصناعية الأولى، القصيم</dd><div style="margin-top:10px"><a class="chip" href="branches.html">كل الفروع ←</a></div></div>
     <div><dt>الحجز والخدمات</dt><dd>استشارة، صيانة، ملاحظات</dd><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="chip" href="{BOOK}" target="_blank" rel="noopener">احجز استشارة</a><a class="chip" href="{FIX}" target="_blank" rel="noopener">طلب صيانة</a></div></div>
   </dl>
@@ -806,7 +849,7 @@ def page_contact(full):
 </div></section></main>'''
     return b + footer(full)
 
-PAGES = {'index.html': page_index, 'products.html': page_products, 'works.html': page_works, 'services.html': page_services,
+PAGES = {'news.html': page_news, 'index.html': page_index, 'products.html': page_products, 'works.html': page_works, 'services.html': page_services,
          'branches.html': page_branches, 'franchise.html': page_franchise, 'contact.html': page_contact}
 
 # artifact build: index is body-only (the host wraps it); every other page is a full document

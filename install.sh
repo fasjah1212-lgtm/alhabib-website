@@ -14,21 +14,31 @@ reload_nginx() { systemctl reload nginx 2>/dev/null || nginx -s reload; }
 [ "$(id -u)" = 0 ] || stop "run as root"
 command -v nginx >/dev/null || stop "nginx not found"
 
-# 1. find the old site's nginx settings
-OLD=$(grep -lE "server_name[^;]*$DOMAIN" /etc/nginx/sites-enabled/* /etc/nginx/conf.d/*.conf 2>/dev/null | head -1)
-[ -n "$OLD" ] || stop "no nginx settings for $DOMAIN"
-say "old site settings: $OLD"
-grep -nE "server_name|proxy_pass|root |ssl_certificate|listen" "$OLD"
-OTHERS=$(grep -hoE "server_name[^;]*" "$OLD" | tr ' \t' '\n\n' | grep -vE "^(server_name|)$" | grep -vE "^(www\.)?$DOMAIN$" | sort -u | tr '\n' ' ')
-[ -z "$OTHERS" ] || stop "this file also serves: $OTHERS"
-CERT=$(grep -m1 -E "^\s*ssl_certificate\s" "$OLD" | awk '{print $2}' | tr -d ';')
-KEY=$(grep -m1 -E "^\s*ssl_certificate_key\s" "$OLD" | awk '{print $2}' | tr -d ';')
-[ -n "$CERT" ] && [ -f "$CERT" ] && [ -n "$KEY" ] && [ -f "$KEY" ] || stop "SSL certificate not found"
+# 1. find every nginx file that serves the domain, and its certificate
+DUMP=$(nginx -T 2>/dev/null)
+echo "$DUMP" | grep -nE "# configuration file|^\s*listen|^\s*server_name|^\s*ssl_certificate|proxy_pass" | grep -v "mime.types\|fastcgi\|snippets" | head -40
+FILES=$(echo "$DUMP" | awk -v d="$DOMAIN" '/^# configuration file /{f=$4; sub(/:$/,"",f)} /^[ \t]*server_name/ && index($0,d){print f}' | sort -u)
+[ -n "$FILES" ] || stop "no nginx settings for $DOMAIN"
+for f in $FILES; do
+  case "$f" in /etc/nginx/sites-enabled/*|/etc/nginx/conf.d/*) ;; *) stop "settings are inside $f, needs a manual look";; esac
+  O=$(grep -hoE "server_name[^;]*" "$f" | tr ' \t' '\n\n' | grep -vE "^(server_name|)$" | grep -vE "^(www\.)?$DOMAIN$" | sort -u | tr '\n' ' ')
+  [ -z "$O" ] || stop "$f also serves: $O"
+done
+say "old site settings: $FILES"
+CERT=$(echo "$DUMP" | grep -E "^\s*ssl_certificate\s" | grep "$DOMAIN" | head -1 | awk '{print $2}' | tr -d ';')
+KEY=$(echo "$DUMP" | grep -E "^\s*ssl_certificate_key\s" | grep "$DOMAIN" | head -1 | awk '{print $2}' | tr -d ';')
+if [ -z "$CERT" ] || [ ! -f "$CERT" ]; then
+  for d in /etc/letsencrypt/live/$DOMAIN /etc/letsencrypt/live/$DOMAIN-0001 /etc/letsencrypt/live/www.$DOMAIN; do
+    [ -f "$d/fullchain.pem" ] && CERT=$d/fullchain.pem && KEY=$d/privkey.pem && break
+  done
+fi
+[ -n "$CERT" ] && [ -f "$CERT" ] && [ -n "$KEY" ] && [ -f "$KEY" ] || { ls /etc/letsencrypt/live/ 2>/dev/null; stop "SSL certificate not found"; }
 say "certificate: $CERT"
-V6=""; grep -q "\[::\]" "$OLD" && V6=yes
+V6=""; for f in $FILES; do grep -q "\[::\]" "$f" && V6=yes; done
 
 # 2. back up nginx
-mkdir -p "$BK" && cp -a /etc/nginx "$BK/nginx" && cp -a "$OLD" "$BK/old-site.conf" || stop "backup failed"
+mkdir -p "$BK/old" && cp -a /etc/nginx "$BK/nginx" || stop "backup failed"
+for f in $FILES; do cp -a "$f" "$BK/old/$(echo "$f" | tr / _)" || stop "backup failed"; done
 say "backup: $BK"
 
 # 3. download the new site
@@ -43,7 +53,8 @@ mkdir -p "$(dirname "$NEW")" && mv "$SRC" "$NEW" && chmod -R a+rX "$NEW" || stop
 say "new site files: $NEW ($(find "$NEW" -type f | wc -l) files)"
 
 # 4. nginx settings for the new site, in the same folder the old ones were in
-if [ "$(dirname "$OLD")" = /etc/nginx/conf.d ]; then CONF=/etc/nginx/conf.d/alhabib-new.conf; else CONF=/etc/nginx/sites-available/alhabib-new; fi
+FIRST=$(echo "$FILES" | head -1)
+if [ "$(dirname "$FIRST")" = /etc/nginx/conf.d ]; then CONF=/etc/nginx/conf.d/alhabib-new.conf; else CONF=/etc/nginx/sites-available/alhabib-new; fi
 cat > "$CONF" <<EOF
 # new Alhabib site (static files). Old settings saved in $BK
 server {
@@ -77,16 +88,15 @@ $( [ -n "$V6" ] && echo '  listen [::]:443 ssl;')
 EOF
 
 # restore script, written before anything is switched
-cat > /root/restore-old-site.sh <<EOF
-#!/bin/bash
-rm -f /etc/nginx/sites-enabled/alhabib-new /etc/nginx/conf.d/alhabib-new.conf
-cp -a "$BK/old-site.conf" "$OLD"
-nginx -t && (systemctl reload nginx 2>/dev/null || nginx -s reload) && echo "OLD SITE IS BACK"
-EOF
+{ echo '#!/bin/bash'
+  echo 'rm -f /etc/nginx/sites-enabled/alhabib-new /etc/nginx/conf.d/alhabib-new.conf'
+  for f in $FILES; do echo "cp -a '$BK/old/$(echo "$f" | tr / _)' '$f'"; done
+  echo 'nginx -t && (systemctl reload nginx 2>/dev/null || nginx -s reload) && echo "OLD SITE IS BACK"'
+} > /root/restore-old-site.sh
 chmod +x /root/restore-old-site.sh
 
 # 5. switch: turn the old settings off, the new ones on
-rm -f "$OLD"
+for f in $FILES; do rm -f "$f"; done
 [ "$CONF" = /etc/nginx/sites-available/alhabib-new ] && ln -sf "$CONF" /etc/nginx/sites-enabled/alhabib-new
 if ! nginx -t; then
   bash /root/restore-old-site.sh

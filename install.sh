@@ -47,7 +47,7 @@ curl -fsSL -o "$TMP/site.tar.gz" "$ZIP" || stop "download failed"
 tar -xzf "$TMP/site.tar.gz" -C "$TMP" || stop "unpack failed"
 SRC=$(find "$TMP" -mindepth 1 -maxdepth 1 -type d | head -1)
 [ -f "$SRC/index.html" ] && [ -f "$SRC/works.html" ] || stop "site files incomplete"
-rm -rf "$SRC/src" "$SRC/README.md" "$SRC/install.sh" "$SRC/restore-old-site.sh" "$SRC/.htaccess"
+rm -rf "$SRC/src" "$SRC/README.md" "$SRC/install.sh" "$SRC/update.sh" "$SRC/.htaccess"
 [ -d "$NEW" ] && mv "$NEW" "$BK/previous-new-site"
 mkdir -p "$(dirname "$NEW")" && mv "$SRC" "$NEW" && chmod -R a+rX "$NEW" || stop "copy failed"
 say "new site files: $NEW ($(find "$NEW" -type f | wc -l) files)"
@@ -80,7 +80,10 @@ $( [ -n "$V6" ] && echo '  listen [::]:443 ssl;')
   ssl_certificate_key $KEY;
   root $NEW;
   index index.html;
-  location / { try_files \$uri \$uri/ \$uri.html =404; }
+  # clean addresses: /works serves works.html, and old *.html links move to the clean form
+  if (\$request_uri ~ ^/index(\.html)?(\?.*)?\$) { return 301 /\$2; }
+  if (\$request_uri ~ ^/([a-z-]+)\.html(\?.*)?\$) { return 301 /\$1\$2; }
+  location / { try_files \$uri \$uri.html \$uri/ =404; }
   location ~* \.(jpg|jpeg|png|webp|svg|gif|mp4|css|js)$ { expires 7d; add_header Cache-Control "public"; }
   gzip on;
   gzip_types text/css application/javascript image/svg+xml application/xml;

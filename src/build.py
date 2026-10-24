@@ -888,7 +888,11 @@ def webp(html):
         return f'<picture><source type="image/webp" {src}>{m.group(0)}</picture>'
     return re.sub(r'<img (?:class="[^"]*" )?src="img/([a-z0-9-]+)\.jpg"([^>]*)>', rep, html)
 from PIL import Image
+def clean_urls(html):
+    # links without ".html" (alhabibfactory.com/works); the server and GitHub Pages both map them to the files
+    html = re.sub(r'href="index\.html(#[^"]*)?"', lambda m: f'href="./{m.group(1) or ""}"', html)
+    return re.sub(r'href="([a-z-]+)\.html(#[^"]*)?"', lambda m: f'href="{m.group(1)}{m.group(2) or ""}"', html)
 for name, fn in PAGES.items():
     open(os.path.join(ART, name), 'w').write(webp(fn(name != 'index.html')))
-    open(os.path.join(STAND, name), 'w').write(webp(fn(True)))
+    open(os.path.join(STAND, name), 'w').write(clean_urls(webp(fn(True))))
 print('built', list(PAGES))

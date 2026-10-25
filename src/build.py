@@ -468,14 +468,14 @@ def footer(full):
   <div class="wrap">
     <div class="foot">
       <div><a href="index.html" class="flogo"><img src="img/logo.svg" alt="مصنع الحبيب"></a>
-        <p>مصنع الحبيب للزجاج والألمنيوم. صُنع لك ومن أجلك.. وكما تتخيل.</p>
+        <p>صُنع لك ومن أجلك.. وكما تتخيل.</p>
         {SOCIAL}
         <div class="foot-iso">{iso}</div></div>
       <div><h2>المنتجات</h2><ul>{prods}</ul></div>
       <div><h2>الخدمات</h2><ul><li><a href="{FIX}" target="_blank" rel="noopener">طلبات الصيانة</a></li><li><a href="{BOOK}" target="_blank" rel="noopener">احجز موعد استشارة</a></li><li><a href="{COMPLAIN}" target="_blank" rel="noopener">صوتك مسموع</a></li><li><a href="{PORTAL}" target="_blank" rel="noopener">البوابة الإلكترونية للموظفين</a></li></ul></div>
       <div><h2>الشركة</h2><ul>{''.join(f'<li><a href="{h}">{l}</a></li>' for h, l in NAV[2:])}</ul></div>
     </div>
-    <div class="foot-bottom"><span>© 2026 مصنع الحبيب للزجاج والألمنيوم. جميع الحقوق محفوظة.</span><span>صناعة سعودية · القصيم</span></div>
+    <div class="foot-bottom"><span>© 2026 مصنع الحبيب للزجاج والألمنيوم. جميع الحقوق محفوظة.</span></div>
   </div>
 </footer>
 <a class="wa" href="https://wa.me/{WA}" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 12 2.2a9.8 9.8 0 0 1 0 19.6zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg></a>

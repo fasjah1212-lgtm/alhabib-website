@@ -267,7 +267,6 @@ FIX = 'https://masatech-habib-factory.odoo.com/fix'
 COMPLAIN = 'https://masatech-habib-factory.odoo.com/complaints'
 PORTAL = 'https://masatech-habib-factory.odoo.com/portal-employees'
 COPY_SVG = '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg>'
-FAV = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M0 0h24a8 8 0 0 1 8 8v24H8a8 8 0 0 1-8-8z' fill='%23DA1F26'/%3E%3Cpath d='M11 25V9h9v5' stroke='%23fff' stroke-width='3' fill='none'/%3E%3C/svg%3E"
 
 NAV = [('index.html', 'الرئيسية'), ('products.html', 'منتجاتنا'), ('works.html', 'أعمالنا'), ('services.html', 'خدماتنا'),
        ('branches.html', 'مواقع الفروع'), ('news.html', 'أخبارنا'), ('franchise.html', 'الامتياز التجاري'), ('contact.html', 'اتصل بنا')]
@@ -414,7 +413,9 @@ def head(title, desc, full):
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{SITE_URL}img/og.jpg">
 <meta name="theme-color" content="#DA1F26">
-<link rel="icon" href="{FAV}">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="img/favicon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap">

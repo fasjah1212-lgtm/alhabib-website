@@ -14,6 +14,10 @@ from email.utils import parsedate_to_datetime
 USER = 'alhabib_fac'
 FEED = f'https://syndication.twitter.com/srv/timeline-profile/screen-name/{USER}'
 KEEP = 60
+# posts the factory does not want on the site (user decision 2026-11-01: sports, e.g. Al-Raed club and the national team)
+HIDE = {'2107578708588626103', '1876401588686012487', '1865662443252273387', '1850228911205965928', '1844481926142583032'}
+HIDE_WORDS = re.compile(r'رائد|alraed|نادي|دوري|المنتخب|صقورنا|كأس')
+def shown(p): return p['id'] not in HIDE and not HIDE_WORDS.search(p.get('text', ''))
 KEYDIR = os.environ.get('ALHABIB_KEYDIR', '/etc/alhabib')
 API = 'https://api.x.com/2'
 UA = {'User-Agent': 'Mozilla/5.0 (compatible; alhabib-site)'}
@@ -96,6 +100,8 @@ def main(site, feed_file=None, tries=1):
     path = os.path.join(site, 'tweets.json')
     old = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else []
     os.makedirs(os.path.join(site, 'img', 'x'), exist_ok=True)
+    if feed_file == '--merge':  # update.sh: fold the server's posts into the ones that came with the update
+        return store(site, path, json.load(open(ADD[0], encoding='utf-8')), old)
     if feed_file and feed_file.startswith('--add'):
         new = from_ids(site, ADD)
         if not new: sys.exit('none of those posts could be read')
@@ -115,6 +121,7 @@ def main(site, feed_file=None, tries=1):
         t = e.get('content', {}).get('tweet')
         if not t or t.get('retweeted_status') or t.get('in_reply_to_status_id_str'): continue
         if t.get('user', {}).get('screen_name', USER).lower() != USER: continue
+        if HIDE_WORDS.search(t.get('full_text', '')): continue
         text = clean(t)
         media = (t.get('extended_entities') or t.get('entities', {})).get('media', [])
         if not text and not media: continue
@@ -130,7 +137,7 @@ def main(site, feed_file=None, tries=1):
 def store(site, path, new, old):
     seen, out = set(), []
     for p in sorted(new + old, key=lambda p: int(p['id']), reverse=True):
-        if p['id'] not in seen: seen.add(p['id']); out.append(p)
+        if p['id'] not in seen and shown(p): seen.add(p['id']); out.append(p)
     out = out[:KEEP]
     imgdir = os.path.join(site, 'img', 'x')
     with open(path + '.part', 'w', encoding='utf-8') as f: json.dump(out, f, ensure_ascii=False)
@@ -143,5 +150,5 @@ def store(site, path, new, old):
 
 if __name__ == '__main__':
     args = [a for a in sys.argv[2:] if a != '--retry']
-    ADD = [re.search(r'\d{15,20}', a).group() for a in args[1:]] if args and args[0] == '--add' else []
+    ADD = [re.search(r'\d{15,20}', a).group() for a in args[1:]] if args and args[0] == '--add' else args[1:]
     main(sys.argv[1], args[0] if args else None, 3 if '--retry' in sys.argv else 1)

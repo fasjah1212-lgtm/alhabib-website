@@ -516,6 +516,7 @@
       .then(function(r){ if (!r.ok) throw r; return r.json(); })
       .then(function(posts){
         if (!posts.length) return;
+        var lim = +feed.getAttribute('data-limit'); if (lim) posts = posts.slice(0, lim);
         feed.innerHTML = posts.map(function(p, i){
           var d = new Date(p.date + 'T12:00:00');
           return '<a class="post xpost" href="' + esc(p.href) + '" target="_blank" rel="noopener" style="--i:' + Math.min(i, 8) + '">' +

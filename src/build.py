@@ -70,6 +70,10 @@ picture{display:contents}
 .xpost .play::after{content:"";position:absolute;inset:0;margin:auto;width:0;height:0;border-style:solid;border-width:10px 0 10px 17px;border-color:transparent transparent transparent #fff;transform:translateX(2px)}
 .xpost time{color:var(--red-deep);font-weight:700;font-size:var(--fs-xs)}
 .xpost p{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;line-height:1.8}
+.cream .post{background:var(--white)}
+.home3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.home3{grid-template-columns:1fr 1fr}.home3>:nth-child(3){display:none}}
+@media (max-width:620px){.home3{grid-template-columns:1fr}.home3>:nth-child(3){display:flex}}
 .posts.live .xpost{animation:xin .8s var(--ease) both;animation-delay:calc(var(--i) * 70ms)}
 @keyframes xin{from{opacity:0;transform:translateY(18px)}}
 @media (prefers-reduced-motion:reduce){.posts.live .xpost{animation:none}.xhead p i{animation:none}}
@@ -726,7 +730,14 @@ def page_index(full):
   </div>
 </section>
 
-<section class="sec" style="padding-top:0"><div class="wrap"><div class="band">
+<section class="sec cream" id="news">
+  <div class="wrap">
+    <div class="head"><h2 class="title">آخر <u>أخبارنا</u></h2><a class="btn btn-dark" href="news.html">كل الأخبار <span class="arrow">←</span></a></div>
+    <div class="posts home3" id="xfeed" data-feed="tweets.json" data-limit="3">{news_cards(NEWS[:3])}</div>
+  </div>
+</section>
+
+<section class="sec"><div class="wrap"><div class="band">
   <div><h2>امتلك امتياز مصنع الحبيب</h2><p>فرصة تكون جزء من نجاحنا عبر نظام الامتياز التجاري المعتمد، باستثمار من 300 ألف إلى 750 ألف ريال.</p></div>
   <div><a class="btn btn-red" href="franchise.html">تفاصيل الامتياز <span class="arrow">←</span></a></div>
 </div></div></section>
@@ -756,9 +767,12 @@ def reviews_block():
     q = ''.join(f'<figure class="rv"><blockquote>{r}</blockquote><figcaption aria-hidden="true">★★★★★</figcaption></figure>' for r in REVIEWS)
     return f'''<section class="sec cream"><div class="wrap"><h2 class="title" style="margin-bottom:28px">تقييم <u>عملائنا</u></h2><div class="rvs">{q}</div></div></section>'''
 
+def news_cards(items):
+    return ''.join(f'''<a class="post" href="{n['href']}" target="_blank" rel="noopener"><img src="img/{n['img']}" alt="" loading="lazy"><div><h2>{n['title']}</h2>{f"<p>{n['body']}</p>" if n['body'] else ''}<span class="more">اقرأ على إكس ←</span></div></a>''' for n in items)
+
 def page_news(full):
     b = head('أخبارنا · مصنع الحبيب', 'آخر أخبار مصنع الحبيب للزجاج والألمنيوم ومنشوراته عن الواجهات والزجاج والألمنيوم.', full) + header('news.html')
-    it = ''.join(f'''<a class="post" href="{n['href']}" target="_blank" rel="noopener"><img src="img/{n['img']}" alt="" loading="lazy"><div><h2>{n['title']}</h2>{f"<p>{n['body']}</p>" if n['body'] else ''}<span class="more">اقرأ على إكس ←</span></div></a>''' for n in NEWS)
+    it = news_cards(NEWS)
     b += f'''<main id="main">{phero("أخبارنا", "آخر أخبار المصنع ومشاريعه، ونصائح تساعدك تختار الزجاج والألمنيوم المناسب.", "skylight.jpg", "سقف زجاجي فوق صالة", "أخبارنا")}
 <section class="sec"><div class="wrap">
   <div class="xhead"><p><i aria-hidden="true"></i>تتحدث تلقائياً من حسابنا على إكس</p><a href="https://x.com/alhabib_fac" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.5z"/></svg>تابعنا على إكس</a></div>

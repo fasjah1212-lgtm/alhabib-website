@@ -608,7 +608,8 @@ FR_FEAT = [
 # a client with no file yet shows its name in the tile instead
 CLIENTS = [('nawat', 'نواة للاستثمار العقاري'), ('sasco', 'ساسكو'), ('sar', 'الخطوط الحديدية السعودية (سار)'), ('almarai', 'المراعي'),
            ('watania', 'الدواجن الوطنية'), ('sabic', 'سابك'), ('mewa', 'وزارة البيئة والمياه والزراعة'), ('aramco', 'أرامكو السعودية'),
-           ('moh', 'وزارة الصحة'), ('western', 'Western Hotel'), ('goldentulip', 'Golden Tulip'), ('aldrees', 'الدريس')]
+           ('moh', 'وزارة الصحة'), ('western', 'Western Hotel'), ('goldentulip', 'Golden Tulip'), ('aldrees', 'الدريس'),
+           ('buraydah', 'كليات بريدة'), ('asheraz', 'دار الشيراز'), ('qassim', 'أمانة منطقة القصيم'), ('mobily', 'موبايلي'), ('venor', 'Venor')]
 CLIENT_DIR = os.path.join(HERE, 'clients')
 
 def client_logo(slug):

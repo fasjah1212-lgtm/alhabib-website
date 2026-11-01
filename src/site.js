@@ -517,8 +517,12 @@
       .then(function(posts){
         if (!posts.length) return;
         var lim = +feed.getAttribute('data-limit'); if (lim) posts = posts.slice(0, lim);
+        var mini = feed.hasAttribute('data-mini');
         feed.innerHTML = posts.map(function(p, i){
           var d = new Date(p.date + 'T12:00:00');
+          if (mini) return '<a class="nm" href="' + esc(p.href) + '" target="_blank" rel="noopener" style="--i:' + i + '">' +
+            (p.img ? '<img src="' + esc(p.img) + '" alt="" loading="lazy" decoding="async">' : '') +
+            '<span><time datetime="' + esc(p.date) + '">' + fmt.format(d) + '</time><p>' + esc(p.text.replace(/\s+/g, ' ')) + '</p><em>اقرأ على إكس ←</em></span></a>';
           return '<a class="post xpost" href="' + esc(p.href) + '" target="_blank" rel="noopener" style="--i:' + Math.min(i, 8) + '">' +
             (p.img ? '<span class="ph"><img src="' + esc(p.img) + '" alt="" loading="' + (i < 3 ? 'eager' : 'lazy') + '" decoding="async">' + (p.video ? '<i class="play" aria-label="فيديو"></i>' : '') + '</span>' : '') +
             '<div><time datetime="' + esc(p.date) + '">' + fmt.format(d) + '</time>' +

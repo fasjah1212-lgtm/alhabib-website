@@ -56,13 +56,6 @@ picture{display:contents}
 .post h2{margin:0;font-size:var(--fs-md);line-height:1.6}
 .post p{margin:0;color:var(--ink-2);font-size:var(--fs-sm)}
 .post .more{margin-top:auto;color:var(--red-deep);font-weight:700;font-size:var(--fs-sm)}
-.xhead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px}
-.xhead p{margin:0;color:var(--ink-2);display:flex;align-items:center;gap:10px}
-.xhead p i{width:9px;height:9px;border-radius:50%;background:#1DB954;box-shadow:0 0 0 0 rgba(29,185,84,.5);animation:xpulse 2.4s infinite}
-@keyframes xpulse{70%{box-shadow:0 0 0 9px rgba(29,185,84,0)}100%{box-shadow:0 0 0 0 rgba(29,185,84,0)}}
-.xhead a{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;text-decoration:none;font-weight:700;padding:11px 20px;border-radius:0 16px 0 16px;transition:transform .4s var(--ease)}
-.xhead a:hover{transform:translateY(-3px)}
-.xhead svg{width:18px;height:18px;fill:currentColor}
 .xpost .ph{position:relative;display:block;overflow:hidden}
 .xpost .ph img{transition:transform 1.2s var(--ease)}
 .xpost:hover .ph img{transform:scale(1.05)}
@@ -70,14 +63,25 @@ picture{display:contents}
 .xpost .play::after{content:"";position:absolute;inset:0;margin:auto;width:0;height:0;border-style:solid;border-width:10px 0 10px 17px;border-color:transparent transparent transparent #fff;transform:translateX(2px)}
 .xpost time{color:var(--red-deep);font-weight:700;font-size:var(--fs-xs)}
 .xpost p{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;line-height:1.8}
-.cream .post{background:var(--white)}
-.home3{grid-template-columns:repeat(3,1fr)}
-@media (max-width:900px){.home3{grid-template-columns:1fr 1fr}.home3>:nth-child(3){display:none}}
-@media (max-width:620px){.home3{grid-template-columns:1fr}.home3>:nth-child(3){display:flex}}
+#about{padding-bottom:clamp(40px,5vw,70px)}
+.newsmini{padding:clamp(18px,3vw,34px) 0 clamp(40px,5vw,64px)}
+.nm-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
+.nm-head h2{margin:0;font-size:var(--fs-lg)}
+.nm-head a{color:var(--red-deep);font-weight:700;font-size:var(--fs-sm);text-decoration:none}
+.nm-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.nm{display:flex;gap:14px;align-items:center;padding:10px;background:var(--cream);border-radius:0 18px 0 18px;color:inherit;text-decoration:none;transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.nm:hover{transform:translateY(-3px);box-shadow:0 14px 26px -18px rgba(31,26,23,.5)}
+.nm img{width:84px;height:84px;flex:none;object-fit:cover;border-radius:0 12px 0 12px}
+.nm span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.nm time{color:var(--red-deep);font-weight:700;font-size:var(--fs-xs)}
+.nm p{margin:0;font-size:var(--fs-sm);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nm em{font-style:normal;color:var(--ink-2);font-size:var(--fs-xs)}
+@media (max-width:900px){.nm-list{grid-template-columns:1fr}}
+.nm-list.live .nm{animation:xin .7s var(--ease) both;animation-delay:calc(var(--i) * 70ms)}
+@media (prefers-reduced-motion:reduce){.nm-list.live .nm{animation:none}}
 .posts.live .xpost{animation:xin .8s var(--ease) both;animation-delay:calc(var(--i) * 70ms)}
 @keyframes xin{from{opacity:0;transform:translateY(18px)}}
-@media (prefers-reduced-motion:reduce){.posts.live .xpost{animation:none}.xhead p i{animation:none}}
-.follow{margin-top:44px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){.posts.live .xpost{animation:none}.follow{margin-top:44px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .follow span{font-weight:700;color:var(--ink-2);margin-inline-end:6px}
 .app{width:58px;height:58px;border-radius:0 18px 0 18px;display:grid;place-items:center;color:#fff;box-shadow:0 12px 24px -14px rgba(31,26,23,.55);transition:transform .45s var(--ease),box-shadow .45s var(--ease)}
 .app:hover{transform:translateY(-4px);box-shadow:0 18px 30px -14px rgba(31,26,23,.6)}
@@ -278,6 +282,9 @@ base = open(os.path.join(HERE, 'base.css')).read()
 # drop desktop-only pin rules from the single-page build
 base = re.sub(r'\n  \.pin\{overflow-x:auto;[^\n]*\n  \.pin::-webkit-scrollbar\{display:none\}\n  \.card\{scroll-snap-align:center;width:min\(84vw,420px\)\}', '\n  .card{width:min(84vw,420px)}', base)
 open(os.path.join(OUT, 'site.css'), 'w').write(base + EXTRA_CSS)
+import hashlib  # ?v= changes whenever the file does, so browsers never keep an old copy
+CSS_V = hashlib.md5((base + EXTRA_CSS).encode()).hexdigest()[:8]
+JS_V = hashlib.md5(open(os.path.join(HERE, 'site.js'), 'rb').read()).hexdigest()[:8]
 
 WA = '966920066276'
 # every "book a consultation" button opens WhatsApp with the message ready to send (user decision 2026-09-28;
@@ -440,7 +447,7 @@ def head(title, desc, full):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap">
-<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="site.css?v={CSS_V}">
 {PIXELS}'''
     if full:
         return f'<!doctype html>\n<html lang="ar" dir="rtl">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n{t}\n{common}\n</head>\n<body>\n'
@@ -502,7 +509,7 @@ def footer(full):
 <a class="wa" href="https://wa.me/{WA}" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 12 2.2a9.8 9.8 0 0 1 0 19.6zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg></a>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="site.js"></script>
+<script src="site.js?v={JS_V}"></script>
 ''' + ('</body>\n</html>\n' if full else '')
 
 def phero(title, sub, img, alt, crumb):
@@ -690,6 +697,13 @@ def page_index(full):
   </div>
 </section>
 
+<section class="newsmini" id="news" aria-labelledby="newsTitle">
+  <div class="wrap">
+    <div class="nm-head"><h2 id="newsTitle">آخر أخبارنا</h2><a href="news.html">كل الأخبار ←</a></div>
+    <div class="nm-list" id="xfeed" data-feed="tweets.json" data-limit="3" data-mini>{news_mini(NEWS[:3])}</div>
+  </div>
+</section>
+
 <section class="sec cream" id="products" style="padding-bottom:clamp(60px,8vw,110px)">
   <div class="wrap head">
     <div><h2 class="title">منتجات تُصنع <u>لتعيش</u></h2></div>
@@ -731,14 +745,7 @@ def page_index(full):
   </div>
 </section>
 
-<section class="sec cream" id="news">
-  <div class="wrap">
-    <div class="head"><h2 class="title">آخر <u>أخبارنا</u></h2><a class="btn btn-dark" href="news.html">كل الأخبار <span class="arrow">←</span></a></div>
-    <div class="posts home3" id="xfeed" data-feed="tweets.json" data-limit="3">{news_cards(NEWS[:3])}</div>
-  </div>
-</section>
-
-<section class="sec"><div class="wrap"><div class="band">
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="band">
   <div><h2>امتلك امتياز مصنع الحبيب</h2><p>فرصة تكون جزء من نجاحنا عبر نظام الامتياز التجاري المعتمد، باستثمار من 300 ألف إلى 750 ألف ريال.</p></div>
   <div><a class="btn btn-red" href="franchise.html">تفاصيل الامتياز <span class="arrow">←</span></a></div>
 </div></div></section>
@@ -768,6 +775,9 @@ def reviews_block():
     q = ''.join(f'<figure class="rv"><blockquote>{r}</blockquote><figcaption aria-hidden="true">★★★★★</figcaption></figure>' for r in REVIEWS)
     return f'''<section class="sec cream"><div class="wrap"><h2 class="title" style="margin-bottom:28px">تقييم <u>عملائنا</u></h2><div class="rvs">{q}</div></div></section>'''
 
+def news_mini(items):
+    return ''.join(f'''<a class="nm" href="{n['href']}" target="_blank" rel="noopener"><img src="img/{n['img']}" alt="" loading="lazy"><span><p>{n['title']}</p><em>اقرأ على إكس ←</em></span></a>''' for n in items)
+
 def news_cards(items):
     return ''.join(f'''<a class="post" href="{n['href']}" target="_blank" rel="noopener"><img src="img/{n['img']}" alt="" loading="lazy"><div><h2>{n['title']}</h2>{f"<p>{n['body']}</p>" if n['body'] else ''}<span class="more">اقرأ على إكس ←</span></div></a>''' for n in items)
 
@@ -776,7 +786,6 @@ def page_news(full):
     it = news_cards(NEWS)
     b += f'''<main id="main">{phero("أخبارنا", "آخر أخبار المصنع ومشاريعه، ونصائح تساعدك تختار الزجاج والألمنيوم المناسب.", "skylight.jpg", "سقف زجاجي فوق صالة", "أخبارنا")}
 <section class="sec"><div class="wrap">
-  <div class="xhead"><p><i aria-hidden="true"></i>تتحدث تلقائياً من حسابنا على إكس</p><a href="https://x.com/alhabib_fac" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.5z"/></svg>تابعنا على إكس</a></div>
   <div class="posts" id="xfeed" data-feed="tweets.json">{it}</div></div></section></main>'''
     return b + cta() + footer(full)
 

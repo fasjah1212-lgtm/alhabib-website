@@ -75,7 +75,8 @@ $L6_443
   # clean addresses: /works serves works.html, and old *.html links move to the clean form
   if (\$request_uri ~ ^/index(\.html)?(\?.*)?\$) { return 301 /\$2; }
   if (\$request_uri ~ ^/([a-z-]+)\.html(\?.*)?\$) { return 301 /\$1\$2; }
-  location / { try_files \$uri \$uri.html \$uri/ =404; }
+  # pages and tweets.json: browsers ask the server each time, so nobody keeps an old page
+  location / { try_files \$uri \$uri.html \$uri/ =404; add_header Cache-Control "no-cache"; }
   location ~* \.(jpg|jpeg|png|webp|svg|gif|mp4|css|js)$ { expires 7d; add_header Cache-Control "public"; }
   gzip on;
   gzip_types text/css application/javascript image/svg+xml application/xml;

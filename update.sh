@@ -29,10 +29,14 @@ curl -fsSL -o "$TMP/site.tar.gz" "$ZIP" || stop "download failed"
 tar -xzf "$TMP/site.tar.gz" -C "$TMP" || stop "unpack failed"
 SRC=$(find "$TMP" -mindepth 1 -maxdepth 1 -type d | head -1)
 [ -f "$SRC/index.html" ] && [ -f "$SRC/works.html" ] || stop "site files incomplete"
+TW=""; [ -f "$SRC/src/tweets.py" ] && TW="$TMP/tweets.py" && cp "$SRC/src/tweets.py" "$TW"
 rm -rf "$SRC/src" "$SRC/README.md" "$SRC/install.sh" "$SRC/update.sh" "$SRC/.htaccess"
 chmod -R a+rX "$SRC"
 mv "$NEW" "$BK/site" || stop "could not move the current files"
 mv "$SRC" "$NEW" || { mv "$BK/site" "$NEW"; stop "copy failed"; }
+# keep the X posts already pulled (they live only on this server)
+[ -f "$BK/site/tweets.json" ] && cp -a "$BK/site/tweets.json" "$NEW/"
+[ -d "$BK/site/img/x" ] && mkdir -p "$NEW/img" && cp -a "$BK/site/img/x" "$NEW/img/"
 say "new files in place ($(find "$NEW" -type f | wc -l) files), previous version in $BK"
 
 back() {
@@ -85,6 +89,13 @@ sleep 2
 PAGE=$(curl -sk --noproxy "*" --resolve $DOMAIN:443:127.0.0.1 https://$DOMAIN/)
 CODE=$(curl -sk --noproxy "*" -o /dev/null -w "%{http_code}" --resolve $DOMAIN:443:127.0.0.1 https://$DOMAIN/works)
 if echo "$PAGE" | grep -q 'class="nav float"' && [ "$CODE" = 200 ]; then
+  # أخبارنا: pull the latest X posts now, then once a day (06:00 Saudi time)
+  if [ -n "$TW" ]; then
+    mkdir -p /usr/local/lib/alhabib && cp "$TW" /usr/local/lib/alhabib/tweets.py
+    echo "0 3 * * * root /usr/bin/python3 /usr/local/lib/alhabib/tweets.py $NEW > /var/log/alhabib-tweets.log 2>&1" > /etc/cron.d/alhabib-tweets
+    chmod 644 /etc/cron.d/alhabib-tweets
+    say "X posts: $(python3 /usr/local/lib/alhabib/tweets.py "$NEW" 2>&1 | tail -1)"
+  fi
   echo
   echo "=============================================="
   echo " DONE: the site on $DOMAIN is updated"

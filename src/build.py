@@ -69,14 +69,15 @@ picture{display:contents}
 .nm-head h2{margin:0;font-size:var(--fs-lg)}
 .nm-head a{color:var(--red-deep);font-weight:700;font-size:var(--fs-sm);text-decoration:none}
 .nm-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.nm{display:flex;gap:14px;align-items:center;padding:10px;background:var(--cream);border-radius:0 18px 0 18px;color:inherit;text-decoration:none;transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
-.nm:hover{transform:translateY(-3px);box-shadow:0 14px 26px -18px rgba(31,26,23,.5)}
-.nm img{width:84px;height:84px;flex:none;object-fit:cover;border-radius:0 12px 0 12px}
-.nm span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.nm{display:flex;flex-direction:column;background:var(--cream);border-radius:0 var(--leaf) 0 var(--leaf);overflow:hidden;color:inherit;text-decoration:none;transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.nm:hover{transform:translateY(-4px);box-shadow:0 18px 30px -20px rgba(31,26,23,.5)}
+.nm img{width:100%;aspect-ratio:2/1;object-fit:cover;transition:transform 1.2s var(--ease)}
+.nm:hover img{transform:scale(1.05)}
+.nm span{display:flex;flex-direction:column;gap:6px;padding:14px 18px 18px;flex:1}
 .nm time{color:var(--red-deep);font-weight:700;font-size:var(--fs-xs)}
-.nm p{margin:0;font-size:var(--fs-sm);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.nm em{font-style:normal;color:var(--ink-2);font-size:var(--fs-xs)}
-@media (max-width:900px){.nm-list{grid-template-columns:1fr}}
+.nm p{margin:0;font-size:var(--fs-sm);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nm em{margin-top:auto;font-style:normal;color:var(--red-deep);font-weight:700;font-size:var(--fs-xs)}
+@media (max-width:900px){.nm-list{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:78%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:none}.nm-list::-webkit-scrollbar{display:none}.nm{scroll-snap-align:start}}
 .nm-list.live .nm{animation:xin .7s var(--ease) both;animation-delay:calc(var(--i) * 70ms)}
 @media (prefers-reduced-motion:reduce){.nm-list.live .nm{animation:none}}
 .posts.live .xpost{animation:xin .8s var(--ease) both;animation-delay:calc(var(--i) * 70ms)}

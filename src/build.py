@@ -673,7 +673,7 @@ def page_index(full):
     <a class="hero-iso" href="#iso">{hero_iso}</a>
     <dl class="hero-strip">
       <div><dt>المقر الرئيسي</dt><dd>المدينة الصناعية الأولى، القصيم</dd></div>
-      <div><dt>التخصص</dt><dd>واجهات، كلادينج، زجاج متخصص</dd></div>
+      <div><dt>التخصص</dt><dd>حلول الزجاج والألمنيوم والواجهات المعمارية</dd></div>
       <div><dt>الفروع</dt><dd>الرياض · بريدة · جدة · حائل</dd></div>
       <div><dt>المبيعات</dt><dd class="mono">920066276</dd></div>
     </dl>

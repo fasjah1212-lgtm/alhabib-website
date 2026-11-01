@@ -507,6 +507,28 @@
     });
   }
 
+  // أخبارنا: the newest posts from X (tweets.json, refreshed on the server every hour); the cards in the page stay if it is missing
+  var feed = document.getElementById('xfeed');
+  if (feed && window.fetch){
+    var fmt = new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn', {day:'numeric', month:'long', year:'numeric'});
+    var esc = function(t){ return t.replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+    fetch(feed.getAttribute('data-feed') + '?t=' + Math.floor(Date.now() / 6e5), {cache:'no-cache'})
+      .then(function(r){ if (!r.ok) throw r; return r.json(); })
+      .then(function(posts){
+        if (!posts.length) return;
+        feed.innerHTML = posts.map(function(p, i){
+          var d = new Date(p.date + 'T12:00:00');
+          return '<a class="post xpost" href="' + esc(p.href) + '" target="_blank" rel="noopener" style="--i:' + Math.min(i, 8) + '">' +
+            (p.img ? '<span class="ph"><img src="' + esc(p.img) + '" alt="" loading="' + (i < 3 ? 'eager' : 'lazy') + '" decoding="async">' + (p.video ? '<i class="play" aria-label="فيديو"></i>' : '') + '</span>' : '') +
+            '<div><time datetime="' + esc(p.date) + '">' + fmt.format(d) + '</time>' +
+            (p.text ? '<p>' + esc(p.text).replace(/\n/g, '<br>') + '</p>' : '') +
+            '<span class="more">اقرأ على إكس ←</span></div></a>';
+        }).join('');
+        feed.classList.add('live');
+      })
+      .catch(function(){});
+  }
+
   if (!G || reduce) return;
   gsap.utils.toArray('.clip').forEach(function(el){
     gsap.fromTo(el, {clipPath:'inset(0 0 18% 0)'}, {clipPath:'inset(0 0 0% 0)', duration:1.4, ease:'expo.out', scrollTrigger:{trigger:el, start:'top 88%', once:true}});

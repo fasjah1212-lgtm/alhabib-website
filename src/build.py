@@ -56,6 +56,23 @@ picture{display:contents}
 .post h2{margin:0;font-size:var(--fs-md);line-height:1.6}
 .post p{margin:0;color:var(--ink-2);font-size:var(--fs-sm)}
 .post .more{margin-top:auto;color:var(--red-deep);font-weight:700;font-size:var(--fs-sm)}
+.xhead{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.xhead p{margin:0;color:var(--ink-2);display:flex;align-items:center;gap:10px}
+.xhead p i{width:9px;height:9px;border-radius:50%;background:#1DB954;box-shadow:0 0 0 0 rgba(29,185,84,.5);animation:xpulse 2.4s infinite}
+@keyframes xpulse{70%{box-shadow:0 0 0 9px rgba(29,185,84,0)}100%{box-shadow:0 0 0 0 rgba(29,185,84,0)}}
+.xhead a{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;text-decoration:none;font-weight:700;padding:11px 20px;border-radius:0 16px 0 16px;transition:transform .4s var(--ease)}
+.xhead a:hover{transform:translateY(-3px)}
+.xhead svg{width:18px;height:18px;fill:currentColor}
+.xpost .ph{position:relative;display:block;overflow:hidden}
+.xpost .ph img{transition:transform 1.2s var(--ease)}
+.xpost:hover .ph img{transform:scale(1.05)}
+.xpost .play{position:absolute;inset:0;margin:auto;width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(4px)}
+.xpost .play::after{content:"";position:absolute;inset:0;margin:auto;width:0;height:0;border-style:solid;border-width:10px 0 10px 17px;border-color:transparent transparent transparent #fff;transform:translateX(2px)}
+.xpost time{color:var(--red-deep);font-weight:700;font-size:var(--fs-xs)}
+.xpost p{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;line-height:1.8}
+.posts.live .xpost{animation:xin .8s var(--ease) both;animation-delay:calc(var(--i) * 70ms)}
+@keyframes xin{from{opacity:0;transform:translateY(18px)}}
+@media (prefers-reduced-motion:reduce){.posts.live .xpost{animation:none}.xhead p i{animation:none}}
 .follow{margin-top:44px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .follow span{font-weight:700;color:var(--ink-2);margin-inline-end:6px}
 .app{width:58px;height:58px;border-radius:0 18px 0 18px;display:grid;place-items:center;color:#fff;box-shadow:0 12px 24px -14px rgba(31,26,23,.55);transition:transform .45s var(--ease),box-shadow .45s var(--ease)}
@@ -743,7 +760,9 @@ def page_news(full):
     b = head('أخبارنا · مصنع الحبيب', 'آخر أخبار مصنع الحبيب للزجاج والألمنيوم ومنشوراته عن الواجهات والزجاج والألمنيوم.', full) + header('news.html')
     it = ''.join(f'''<a class="post" href="{n['href']}" target="_blank" rel="noopener"><img src="img/{n['img']}" alt="" loading="lazy"><div><h2>{n['title']}</h2>{f"<p>{n['body']}</p>" if n['body'] else ''}<span class="more">اقرأ على إكس ←</span></div></a>''' for n in NEWS)
     b += f'''<main id="main">{phero("أخبارنا", "آخر أخبار المصنع ومشاريعه، ونصائح تساعدك تختار الزجاج والألمنيوم المناسب.", "skylight.jpg", "سقف زجاجي فوق صالة", "أخبارنا")}
-<section class="sec"><div class="wrap"><div class="posts">{it}</div></div></section></main>'''
+<section class="sec"><div class="wrap">
+  <div class="xhead"><p><i aria-hidden="true"></i>تتحدث تلقائياً من حسابنا على إكس</p><a href="https://x.com/alhabib_fac" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.5z"/></svg>تابعنا على إكس</a></div>
+  <div class="posts" id="xfeed" data-feed="tweets.json">{it}</div></div></section></main>'''
     return b + cta() + footer(full)
 
 def page_works(full):

@@ -3,6 +3,7 @@
 # Standard library only, so it runs as is on the server's python3 (a cron job every hour).
 #   python3 tweets.py SITE_DIR            fetch from X
 #   python3 tweets.py SITE_DIR FEED.html  use a saved copy of the feed (local tests)
+#   python3 tweets.py SITE_DIR --add ID…   add these posts by their id (the number at the end of the post's link)
 #   python3 tweets.py SITE_DIR --retry    if X says "too many requests", try again 20 and 40 minutes later (cron)
 # With an X API key in /etc/alhabib/x-token it reads the official API (only posts newer than the ones we have);
 # without one it falls back to X's public feed, which X stopped updating in 2025.
@@ -71,6 +72,19 @@ def from_api(site, token, have):
                     'text': text, 'img': img, 'video': video})
     return out
 
+def from_ids(site, ids):
+    # X's embed endpoint: one public post at a time, no key needed
+    out = []
+    for tid in ids:
+        t = json.loads(get(f'https://cdn.syndication.twimg.com/tweet-result?id={tid}&token=4'))
+        if t.get('user', {}).get('screen_name', '').lower() != USER: continue
+        ms = t.get('mediaDetails', [])
+        text = clean({'full_text': t.get('text', ''), 'entities': t.get('entities', {})})
+        out.append({'id': t['id_str'], 'href': f'https://x.com/{USER}/status/{t["id_str"]}', 'date': t['created_at'][:10],
+                    'text': text, 'img': save_img(site, t['id_str'], ms[0]['media_url_https'] + '?name=medium') if ms else '',
+                    'video': bool(ms) and ms[0].get('type') in ('video', 'animated_gif')})
+    return out
+
 def fetch(tries):
     for i in range(tries):
         try: return get(FEED).decode('utf-8')
@@ -82,6 +96,10 @@ def main(site, feed_file=None, tries=1):
     path = os.path.join(site, 'tweets.json')
     old = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else []
     os.makedirs(os.path.join(site, 'img', 'x'), exist_ok=True)
+    if feed_file and feed_file.startswith('--add'):
+        new = from_ids(site, ADD)
+        if not new: sys.exit('none of those posts could be read')
+        return store(site, path, new, old)
     keyf = os.path.join(KEYDIR, 'x-token')
     if not feed_file and os.path.exists(keyf):
         try: new = from_api(site, open(keyf).read().strip(), [p['id'] for p in old])
@@ -125,4 +143,5 @@ def store(site, path, new, old):
 
 if __name__ == '__main__':
     args = [a for a in sys.argv[2:] if a != '--retry']
+    ADD = [re.search(r'\d{15,20}', a).group() for a in args[1:]] if args and args[0] == '--add' else []
     main(sys.argv[1], args[0] if args else None, 3 if '--retry' in sys.argv else 1)

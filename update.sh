@@ -34,9 +34,19 @@ rm -rf "$SRC/src" "$SRC/README.md" "$SRC/install.sh" "$SRC/update.sh" "$SRC/.hta
 chmod -R a+rX "$SRC"
 mv "$NEW" "$BK/site" || stop "could not move the current files"
 mv "$SRC" "$NEW" || { mv "$BK/site" "$NEW"; stop "copy failed"; }
-# keep the X posts already pulled (they live only on this server)
-[ -f "$BK/site/tweets.json" ] && cp -a "$BK/site/tweets.json" "$NEW/"
-[ -d "$BK/site/img/x" ] && mkdir -p "$NEW/img" && cp -a "$BK/site/img/x" "$NEW/img/"
+# keep the X posts already pulled on this server, together with any added in this update
+[ -d "$BK/site/img/x" ] && mkdir -p "$NEW/img/x" && cp -an "$BK/site/img/x/." "$NEW/img/x/"
+if [ -f "$BK/site/tweets.json" ]; then
+  if [ -f "$NEW/tweets.json" ]; then
+    python3 - "$BK/site/tweets.json" "$NEW/tweets.json" <<'PY' || cp -a "$BK/site/tweets.json" "$NEW/"
+import json, sys
+seen, out = set(), []
+for p in sorted(json.load(open(sys.argv[1])) + json.load(open(sys.argv[2])), key=lambda p: int(p['id']), reverse=True):
+    if p['id'] not in seen: seen.add(p['id']); out.append(p)
+json.dump(out[:60], open(sys.argv[2], 'w'), ensure_ascii=False)
+PY
+  else cp -a "$BK/site/tweets.json" "$NEW/"; fi
+fi
 say "new files in place ($(find "$NEW" -type f | wc -l) files), previous version in $BK"
 
 back() {

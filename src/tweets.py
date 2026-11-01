@@ -3,8 +3,9 @@
 # Standard library only, so it runs as is on the server's python3 (a cron job every hour).
 #   python3 tweets.py SITE_DIR            fetch from X
 #   python3 tweets.py SITE_DIR FEED.html  use a saved copy of the feed (local tests)
+#   python3 tweets.py SITE_DIR --retry    if X says "too many requests", try again 20 and 40 minutes later (cron)
 # If X answers with nothing usable, the current tweets.json stays as it is.
-import html, json, os, re, sys, urllib.request
+import html, json, os, re, sys, time, urllib.error, urllib.request
 from email.utils import parsedate_to_datetime
 
 USER = 'alhabib_fac'
@@ -25,8 +26,15 @@ def clean(t):
     lines = [l for l in lines if l and not re.fullmatch(r'(?:[#@]\S+\s*)+', l)]
     return re.sub(r'[ \t]+', ' ', '\n'.join(lines)).strip()
 
-def main(site, feed_file=None):
-    raw = open(feed_file, encoding='utf-8').read() if feed_file else get(FEED).decode('utf-8')
+def fetch(tries):
+    for i in range(tries):
+        try: return get(FEED).decode('utf-8')
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or i == tries - 1: sys.exit(f'X answered {e.code}; tweets.json left as it is')
+            time.sleep(1200 * (i + 1))
+
+def main(site, feed_file=None, tries=1):
+    raw = open(feed_file, encoding='utf-8').read() if feed_file else fetch(tries)
     m = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', raw, re.S)
     if not m: sys.exit('X sent no timeline; tweets.json left as it is')
     entries = json.loads(m.group(1))['props']['pageProps'].get('timeline', {}).get('entries', [])
@@ -67,4 +75,5 @@ def main(site, feed_file=None):
     print(len(out), 'posts, newest', out[0]['date'])
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
+    args = [a for a in sys.argv[2:] if a != '--retry']
+    main(sys.argv[1], args[0] if args else None, 3 if '--retry' in sys.argv else 1)

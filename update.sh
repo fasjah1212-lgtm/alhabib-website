@@ -92,7 +92,7 @@ if echo "$PAGE" | grep -q 'class="nav float"' && [ "$CODE" = 200 ]; then
   # أخبارنا: pull the latest X posts now, then once a day (06:00 Saudi time)
   if [ -n "$TW" ]; then
     mkdir -p /usr/local/lib/alhabib && cp "$TW" /usr/local/lib/alhabib/tweets.py
-    echo "0 3 * * * root /usr/bin/python3 /usr/local/lib/alhabib/tweets.py $NEW > /var/log/alhabib-tweets.log 2>&1" > /etc/cron.d/alhabib-tweets
+    echo "0 3 * * * root /usr/bin/python3 /usr/local/lib/alhabib/tweets.py $NEW --retry > /var/log/alhabib-tweets.log 2>&1" > /etc/cron.d/alhabib-tweets
     chmod 644 /etc/cron.d/alhabib-tweets
     say "X posts: $(python3 /usr/local/lib/alhabib/tweets.py "$NEW" 2>&1 | tail -1)"
   fi

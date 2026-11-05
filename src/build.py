@@ -68,8 +68,9 @@ picture{display:contents}
 .promo{position:fixed;right:18px;bottom:18px;z-index:60;pointer-events:none}
 .promo-card{position:relative;width:clamp(150px,15vw,210px);padding:6px;background:#fff;border-radius:0 22px 0 22px;box-shadow:0 22px 44px -18px rgba(31,26,23,.55),0 0 0 1px rgba(218,31,38,.18);pointer-events:auto;transform-origin:100% 100%;transition:transform .55s var(--ease),opacity .4s var(--ease)}
 .promo-card img{display:block;width:100%;height:auto;border-radius:0 17px 0 17px}
-.promo-x{position:absolute;top:-10px;left:-10px;width:30px;height:30px;border-radius:50%;border:0;background:var(--ink,#1F1A17);color:#fff;font:700 14px/30px var(--font,inherit);cursor:pointer;box-shadow:0 6px 14px -6px rgba(0,0,0,.5)}
-.promo-x:hover{background:var(--red)}
+.promo-x{position:absolute;top:14px;left:14px;z-index:2;display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--ink,#1F1A17);cursor:pointer;box-shadow:0 4px 14px -4px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background .25s,color .25s,transform .35s var(--ease)}
+.promo-x svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.promo-x:hover,.promo-x:focus-visible{background:var(--red);color:#fff;transform:rotate(90deg)}
 .promo-tab{position:fixed;right:0;bottom:120px;width:38px;padding:14px 0;border:0;border-radius:14px 0 0 14px;background:var(--red);color:#fff;font:800 13px/1 var(--font,inherit);cursor:pointer;box-shadow:0 10px 24px -10px rgba(218,31,38,.7);transform:translateX(110%);transition:transform .45s var(--ease);pointer-events:auto}
 .promo-tab span{display:block;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.5px}
 .promo.closed .promo-card{transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none}
@@ -81,10 +82,10 @@ picture{display:contents}
 .promo.big .promo-bg{opacity:1;pointer-events:auto;cursor:zoom-out}
 .promo.big .promo-card{position:fixed;right:50%;bottom:50%;width:min(86vw,calc(84vh * 9 / 16),460px);transform:translate(50%,50%);padding:8px;border-radius:0 30px 0 30px;animation:promoBig .5s var(--ease) both}
 .promo.big .promo-card img{cursor:default;border-radius:0 24px 0 24px}
-.promo.big .promo-x{width:38px;height:38px;font-size:16px;line-height:38px;top:-14px;left:-14px}
+.promo.big .promo-x{width:42px;height:42px;top:18px;left:18px}.promo.big .promo-x svg{width:17px;height:17px}
 @keyframes promoBig{from{transform:translate(50%,50%) scale(.85);opacity:0}}
 @keyframes promoIn{from{transform:translateY(30px) scale(.92);opacity:0}}
-@media (max-width:700px){.promo{right:10px;bottom:12px}.promo-card{width:118px;padding:4px;border-radius:0 16px 0 16px}.promo-card img{border-radius:0 12px 0 12px}.promo-x{width:26px;height:26px;line-height:26px;font-size:12px;top:-8px;left:-8px}}
+@media (max-width:700px){.promo{right:10px;bottom:12px}.promo-card{width:118px;padding:4px;border-radius:0 16px 0 16px}.promo-card img{border-radius:0 12px 0 12px}.promo-x{width:22px;height:22px;top:6px;left:6px}.promo-x svg{width:10px;height:10px}}
 @media (prefers-reduced-motion:reduce){.promo-card,.promo-tab{transition:none}.promo.enter .promo-card,.promo.big .promo-card{animation:none}.promo-bg{transition:none}}
 .newsmini{padding:clamp(18px,3vw,34px) 0 clamp(40px,5vw,64px)}
 .nm-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
@@ -312,7 +313,7 @@ CSS_V = hashlib.md5((base + EXTRA_CSS).encode()).hexdigest()[:8]
 PROMO = {'img': 'promo', 'until': '2026-11-30', 'alt': 'عرض الجمعة السوداء: خصم 15% حتى 30 نوفمبر 2026'}
 PROMO_HTML = (f'''<aside class="promo" id="promo" data-until="{PROMO['until']}" aria-label="عرض خاص" hidden>
   <div class="promo-bg"></div>
-  <div class="promo-card"><button type="button" class="promo-x" aria-label="إخفاء العرض">✕</button>
+  <div class="promo-card"><button type="button" class="promo-x" aria-label="إخفاء العرض"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <img src="img/{PROMO['img']}.jpg" alt="{PROMO['alt']}" width="540" height="960" decoding="async"></div>
   <button type="button" class="promo-tab" aria-label="إظهار العرض"><span>خصم 15%</span></button>
 </aside>

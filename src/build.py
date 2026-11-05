@@ -76,12 +76,6 @@ picture{display:contents}
 .promo.closed .promo-card{transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none}
 .promo.closed .promo-tab{transform:none}
 .promo.enter .promo-card{animation:promoIn .8s var(--ease) both}
-.promo-cd{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:6px;padding:6px 9px;border-radius:0 0 0 14px;background:var(--ink,#1F1A17);color:#fff;font:600 11px/1.2 var(--font,inherit)}
-.promo-cd span{opacity:.75;font-weight:500}
-.promo-cd strong{font-weight:800;white-space:nowrap}
-.promo-cd b,.promo-cd bdi{color:#fff;font-variant-numeric:tabular-nums}
-.promo-cd b{color:#ff5a5f}
-.promo.big .promo-cd{margin-top:8px;padding:10px 14px;font-size:15px;border-radius:0 0 0 22px}
 .promo-card img{cursor:zoom-in}
 .promo-bg{position:fixed;inset:0;background:rgba(20,16,14,.62);opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
 .promo.big{z-index:200}
@@ -91,7 +85,7 @@ picture{display:contents}
 .promo.big .promo-x{width:42px;height:42px;top:18px;left:18px}.promo.big .promo-x svg{width:17px;height:17px}
 @keyframes promoBig{from{transform:translate(50%,50%) scale(.85);opacity:0}}
 @keyframes promoIn{from{transform:translateY(30px) scale(.92);opacity:0}}
-@media (max-width:700px){.promo{right:10px;bottom:12px}.promo-card{width:118px;padding:4px;border-radius:0 16px 0 16px}.promo-card img{border-radius:0 12px 0 12px}.promo-x{width:22px;height:22px;top:6px;left:6px}.promo-x svg{width:10px;height:10px}.promo:not(.big) .promo-cd{flex-direction:column;gap:1px;padding:4px 6px;font-size:10px;border-radius:0 0 0 11px}}
+@media (max-width:700px){.promo{right:10px;bottom:12px}.promo-card{width:118px;padding:4px;border-radius:0 16px 0 16px}.promo-card img{border-radius:0 12px 0 12px}.promo-x{width:22px;height:22px;top:6px;left:6px}.promo-x svg{width:10px;height:10px}}
 @media (prefers-reduced-motion:reduce){.promo-card,.promo-tab{transition:none}.promo.enter .promo-card,.promo.big .promo-card{animation:none}.promo-bg{transition:none}}
 .newsmini{padding:clamp(18px,3vw,34px) 0 clamp(40px,5vw,64px)}
 .nm-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
@@ -320,8 +314,7 @@ PROMO = {'img': 'promo', 'until': '2026-11-30', 'alt': 'عرض الجمعة ال
 PROMO_HTML = (f'''<aside class="promo" id="promo" data-until="{PROMO['until']}" aria-label="عرض خاص" hidden>
   <div class="promo-bg"></div>
   <div class="promo-card"><button type="button" class="promo-x" aria-label="إخفاء العرض"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <img src="img/{PROMO['img']}.jpg" alt="{PROMO['alt']}" width="540" height="960" decoding="async">
-    <div class="promo-cd" aria-hidden="true"><span>ينتهي العرض بعد</span><strong><b class="cd-d">0</b> يوم <bdi dir="ltr" class="cd-t">00:00:00</bdi></strong></div></div>
+    <img src="img/{PROMO['img']}.jpg" alt="{PROMO['alt']}" width="540" height="960" decoding="async"></div>
   <button type="button" class="promo-tab" aria-label="إظهار العرض"><span>خصم 15%</span></button>
 </aside>
 ''' if PROMO else '')

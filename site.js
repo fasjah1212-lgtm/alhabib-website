@@ -553,6 +553,15 @@
       if (state === 'closed') {}
       else if (!seen && !state) setTimeout(function(){ set('big'); try { localStorage.setItem(SEEN, '1'); } catch(e){} }, 1200);
       else setTimeout(function(){ promo.classList.remove('closed'); promo.classList.add('enter'); }, 1200);
+      var cdD = promo.querySelector('.cd-d'), cdT = promo.querySelector('.cd-t');
+      var tick = function(){
+        var left = Math.max(0, Math.floor((until - Date.now()) / 1000));
+        if (!left) { promo.hidden = true; return; }
+        var two = function(n){ return (n < 10 ? '0' : '') + n; };
+        cdD.textContent = Math.floor(left / 86400);
+        cdT.textContent = two(Math.floor(left % 86400 / 3600)) + ':' + two(Math.floor(left % 3600 / 60)) + ':' + two(left % 60);
+      };
+      if (cdD) { tick(); setInterval(tick, 1000); }
       promo.querySelector('.promo-x').addEventListener('click', function(){ set('closed'); });
       promo.querySelector('.promo-tab').addEventListener('click', function(){ set('small'); });
       promo.querySelector('.promo-bg').addEventListener('click', function(){ set('small'); });

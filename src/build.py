@@ -64,6 +64,28 @@ picture{display:contents}
 .xpost time{color:var(--red-deep);font-weight:700;font-size:var(--fs-xs)}
 .xpost p{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;line-height:1.8}
 #about{padding-bottom:clamp(40px,5vw,70px)}
+/* floating offer: bottom right (WhatsApp is bottom left); closed it tucks into the right edge as a tab */
+.promo{position:fixed;right:18px;bottom:18px;z-index:60;pointer-events:none}
+.promo-card{position:relative;width:clamp(150px,15vw,210px);padding:6px;background:#fff;border-radius:0 22px 0 22px;box-shadow:0 22px 44px -18px rgba(31,26,23,.55),0 0 0 1px rgba(218,31,38,.18);pointer-events:auto;transform-origin:100% 100%;transition:transform .55s var(--ease),opacity .4s var(--ease)}
+.promo-card img{display:block;width:100%;height:auto;border-radius:0 17px 0 17px}
+.promo-x{position:absolute;top:-10px;left:-10px;width:30px;height:30px;border-radius:50%;border:0;background:var(--ink,#1F1A17);color:#fff;font:700 14px/30px var(--font,inherit);cursor:pointer;box-shadow:0 6px 14px -6px rgba(0,0,0,.5)}
+.promo-x:hover{background:var(--red)}
+.promo-tab{position:fixed;right:0;bottom:120px;width:38px;padding:14px 0;border:0;border-radius:14px 0 0 14px;background:var(--red);color:#fff;font:800 13px/1 var(--font,inherit);cursor:pointer;box-shadow:0 10px 24px -10px rgba(218,31,38,.7);transform:translateX(110%);transition:transform .45s var(--ease);pointer-events:auto}
+.promo-tab span{display:block;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.5px}
+.promo.closed .promo-card{transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none}
+.promo.closed .promo-tab{transform:none}
+.promo.enter .promo-card{animation:promoIn .8s var(--ease) both}
+.promo-card img{cursor:zoom-in}
+.promo-bg{position:fixed;inset:0;background:rgba(20,16,14,.62);opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
+.promo.big{z-index:200}
+.promo.big .promo-bg{opacity:1;pointer-events:auto;cursor:zoom-out}
+.promo.big .promo-card{position:fixed;right:50%;bottom:50%;width:min(86vw,calc(84vh * 9 / 16),460px);transform:translate(50%,50%);padding:8px;border-radius:0 30px 0 30px;animation:promoBig .5s var(--ease) both}
+.promo.big .promo-card img{cursor:default;border-radius:0 24px 0 24px}
+.promo.big .promo-x{width:38px;height:38px;font-size:16px;line-height:38px;top:-14px;left:-14px}
+@keyframes promoBig{from{transform:translate(50%,50%) scale(.85);opacity:0}}
+@keyframes promoIn{from{transform:translateY(30px) scale(.92);opacity:0}}
+@media (max-width:700px){.promo{right:10px;bottom:12px}.promo-card{width:118px;padding:4px;border-radius:0 16px 0 16px}.promo-card img{border-radius:0 12px 0 12px}.promo-x{width:26px;height:26px;line-height:26px;font-size:12px;top:-8px;left:-8px}}
+@media (prefers-reduced-motion:reduce){.promo-card,.promo-tab{transition:none}.promo.enter .promo-card,.promo.big .promo-card{animation:none}.promo-bg{transition:none}}
 .newsmini{padding:clamp(18px,3vw,34px) 0 clamp(40px,5vw,64px)}
 .nm-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
 .nm-head h2{margin:0;font-size:var(--fs-lg)}
@@ -286,6 +308,15 @@ base = re.sub(r'\n  \.pin\{overflow-x:auto;[^\n]*\n  \.pin::-webkit-scrollbar\{d
 open(os.path.join(OUT, 'site.css'), 'w').write(base + EXTRA_CSS)
 import hashlib  # ?v= changes whenever the file does, so browsers never keep an old copy
 CSS_V = hashlib.md5((base + EXTRA_CSS).encode()).hexdigest()[:8]
+# floating offer (user asked 2026-11-05): shows until the date below, then disappears by itself
+PROMO = {'img': 'promo', 'until': '2026-11-30', 'alt': 'عرض الجمعة السوداء: خصم 15% حتى 30 نوفمبر 2026'}
+PROMO_HTML = (f'''<aside class="promo" id="promo" data-until="{PROMO['until']}" aria-label="عرض خاص" hidden>
+  <div class="promo-bg"></div>
+  <div class="promo-card"><button type="button" class="promo-x" aria-label="إخفاء العرض">✕</button>
+    <img src="img/{PROMO['img']}.jpg" alt="{PROMO['alt']}" width="540" height="960" decoding="async"></div>
+  <button type="button" class="promo-tab" aria-label="إظهار العرض"><span>خصم 15%</span></button>
+</aside>
+''' if PROMO else '')
 JS_V = hashlib.md5(open(os.path.join(HERE, 'site.js'), 'rb').read()).hexdigest()[:8]
 
 WA = '966920066276'
@@ -508,7 +539,7 @@ def footer(full):
     <div class="foot-bottom"><span>© 2026 مصنع الحبيب للزجاج والألمنيوم. جميع الحقوق محفوظة.</span></div>
   </div>
 </footer>
-<a class="wa" href="https://wa.me/{WA}" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 12 2.2a9.8 9.8 0 0 1 0 19.6zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg></a>
+{PROMO_HTML}<a class="wa" href="https://wa.me/{WA}" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 12 2.2a9.8 9.8 0 0 1 0 19.6zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg></a>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="site.js?v={JS_V}"></script>

@@ -534,6 +534,33 @@
       .catch(function(){});
   }
 
+  // floating offer: hidden after its end date. A first-time visitor sees it big in the middle;
+  // tap outside = small card in the corner, tap the card = big again, ✕ = tucked into the red tab.
+  var promo = document.getElementById('promo');
+  if (promo){
+    var end = promo.getAttribute('data-until'), until = new Date(end + 'T23:59:59+03:00');
+    if (Date.now() <= until){
+      var KEY = 'promo-state-' + end, SEEN = 'promo-seen-' + end, state = '', seen = false;
+      try { state = sessionStorage.getItem(KEY) || ''; seen = localStorage.getItem(SEEN) === '1'; } catch(e){}
+      var set = function(st, keep){
+        promo.classList.toggle('closed', st === 'closed');
+        promo.classList.toggle('big', st === 'big');
+        promo.classList.remove('enter');
+        if (keep !== false) try { sessionStorage.setItem(KEY, st === 'big' ? 'small' : st); } catch(e){}
+      };
+      promo.hidden = false;
+      promo.classList.add('closed');
+      if (state === 'closed') {}
+      else if (!seen && !state) setTimeout(function(){ set('big'); try { localStorage.setItem(SEEN, '1'); } catch(e){} }, 1200);
+      else setTimeout(function(){ promo.classList.remove('closed'); promo.classList.add('enter'); }, 1200);
+      promo.querySelector('.promo-x').addEventListener('click', function(){ set('closed'); });
+      promo.querySelector('.promo-tab').addEventListener('click', function(){ set('small'); });
+      promo.querySelector('.promo-bg').addEventListener('click', function(){ set('small'); });
+      promo.querySelector('.promo-card img').addEventListener('click', function(){ if (!promo.classList.contains('big')) set('big'); });
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && promo.classList.contains('big')) set('small'); });
+    }
+  }
+
   if (!G || reduce) return;
   gsap.utils.toArray('.clip').forEach(function(el){
     gsap.fromTo(el, {clipPath:'inset(0 0 18% 0)'}, {clipPath:'inset(0 0 0% 0)', duration:1.4, ease:'expo.out', scrollTrigger:{trigger:el, start:'top 88%', once:true}});

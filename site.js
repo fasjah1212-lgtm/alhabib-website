@@ -35,14 +35,28 @@
     addEventListener('keydown', function(e){ if (e.key === 'Escape' && !drawer.hidden){ drawer.hidden = true; mb.setAttribute('aria-expanded','false'); mb.focus(); } });
   }
 
+  function track(ev, data){ var o = {event: ev, page_path: location.pathname}; for (var k in data) o[k] = data[k]; (window.dataLayer = window.dataLayer || []).push(o); }
+
   document.querySelectorAll('.copy').forEach(function(b){
     b.addEventListener('click', function(){
       var v = b.getAttribute('data-copy'), old = b.innerHTML;
       function ok(){ b.classList.add('ok'); b.textContent = 'تم النسخ ✓'; setTimeout(function(){ b.classList.remove('ok'); b.innerHTML = old; }, 1600); }
       function fb(){ var t=document.createElement('textarea'); t.value=v; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); ok(); }catch(e){} t.remove(); }
+      track('phone_click', {phone_number: v});
+      // phones call the number; computers copy it
+      if (matchMedia('(pointer: coarse)').matches) { location.href = 'tel:' + v; return; }
       try { navigator.clipboard.writeText(v).then(ok, fb); } catch(e){ fb(); }
     });
   });
+
+  // conversion signals for Google Tag Manager (custom events: quote_request_submit, whatsapp_click, phone_click)
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href*="wa.me/"]');
+    if (!a) return;
+    var form = a.closest('.wa-form');
+    if (form) track('quote_request_submit', {form_name: form.getAttribute('data-subject') || ''});
+    else track('whatsapp_click', {link_text: (a.textContent || a.getAttribute('aria-label') || '').trim().slice(0, 60)});
+  }, true);
 
   // home hero: the house moves through the day only as the page scrolls. The hero sticks while the
   // page scrolls through an extra stretch, and that stretch drives the clip's time (eased, so wheel

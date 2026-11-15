@@ -545,7 +545,7 @@ def footer(full):
     <div class="foot-bottom"><span>© 2026 مصنع الحبيب للزجاج والألمنيوم. جميع الحقوق محفوظة.</span></div>
   </div>
 </footer>
-{PROMO_HTML}<a class="wa" href="https://wa.me/{WA}" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 12 2.2a9.8 9.8 0 0 1 0 19.6zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg></a>
+<!--promo-->{PROMO_HTML}<!--/promo--><a class="wa" href="https://wa.me/{WA}" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 12 2.2a9.8 9.8 0 0 1 0 19.6zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg></a>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="site.js?v={JS_V}"></script>
@@ -683,7 +683,7 @@ def clients_strip():
     return f'''<section class="clients" aria-labelledby="clientsTitle">
   <div class="clients-head"><h2 id="clientsTitle">أبرز عملائنا</h2></div>
   <div class="clients-view" tabindex="0" role="group" aria-roledescription="شريط متحرك" aria-label="شعارات أبرز عملائنا. اسحب الشريط أو استخدم الأسهم للتنقل">
-    <ul class="clients-track">{tiles(False)}{tiles(True)}{tiles(True)}</ul>
+    <ul class="clients-track"><!--clients-->{tiles(False)}{tiles(True)}{tiles(True)}<!--/clients--></ul>
   </div>
 </section>'''
 
@@ -836,7 +836,7 @@ def page_works(full):
     b += f'''<main id="main">{phero("أعمالنا", "من الخيال إلى الواقع. مشاريع نفذناها بجودة في التنفيذ ودقة في التفاصيل وسرعة في التسليم.", "tent.jpg", "خيمة زجاجية مضاءة", "أعمالنا")}
 <section class="sec"><div class="wrap">
   <div class="filters" role="group" aria-label="تصفية الأعمال">{fl}</div>
-  {reels_block()}<div class="works" id="works">{it}</div>
+  {reels_block()}<div class="works" id="works"><!--works-->{it}<!--/works--></div>
   <div class="follow"><span>تابع جديد أعمالنا</span>
     <a class="app app-x" href="https://x.com/alhabib_fac" target="_blank" rel="noopener" aria-label="حسابنا على إكس"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.5z"/></svg></a>
     <a class="app app-tt" href="https://www.tiktok.com/@alhabibfac" target="_blank" rel="noopener" aria-label="حسابنا على تيك توك"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="c" d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/><path class="r" d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/><path d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2-2.8V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7A4.6 4.6 0 0 1 16.6 2z"/></svg></a>
@@ -975,7 +975,48 @@ def clean_urls(html):
     # links without ".html" (alhabibfactory.com/works); the server and GitHub Pages both map them to the files
     html = re.sub(r'href="index\.html(#[^"]*)?"', lambda m: f'href="./{m.group(1) or ""}"', html)
     return re.sub(r'href="([a-z-]+)\.html(#[^"]*)?"', lambda m: f'href="{m.group(1)}{m.group(2) or ""}"', html)
+# control panel (/admin on the server): every text-only element gets data-e="<key>" so the panel can change
+# its words; the key comes from the original text, so the same footer line is one entry on every page
+import hashlib as _h
+EDIT_TAGS = {'h1', 'h2', 'h3', 'h4', 'p', 'li', 'dd', 'dt', 'blockquote', 'figcaption', 'label', 'summary'}
+INLINE_OK = {'br', 'em', 'b', 'strong', 'i', 'u', 'span', 'bdi', 'small'}
+def mark_editable(html):
+    toks = list(re.finditer(r'<!--.*?-->|<script\b.*?</script>|<style\b.*?</style>|<[^>]+>|[^<]+', html, re.S))
+    stack, inserts = [], []
+    zone = 0  # inside the works gallery / clients strip / promo the panel has its own editors
+    for m in toks:
+        t = m.group()
+        if t in ('<!--works-->', '<!--clients-->', '<!--promo-->'): zone += 1; continue
+        if t in ('<!--/works-->', '<!--/clients-->', '<!--/promo-->'): zone -= 1; continue
+        if t.startswith(('<!', '<script', '<style')): continue
+        if t.startswith('</'):
+            name = t[2:-1].strip().lower()
+            while stack:
+                n, start, ok, open_end = stack.pop()
+                if n == name:
+                    inner = html[open_end:m.start()]
+                    if ok and name in EDIT_TAGS and not zone and re.search(r'[\u0600-\u06FFA-Za-z]', re.sub(r'<[^>]+>', '', inner)) and 'data-e=' not in html[start:open_end]:
+                        key = _h.sha1(inner.strip().encode()).hexdigest()[:10]
+                        inserts.append((open_end - 1, f' data-e="{key}"'))
+                    if stack and not ok: stack[-1][2] = False
+                    break
+                if stack: stack[-1][2] = False
+            continue
+        if t.startswith('<'):
+            name = re.match(r'<\s*([a-zA-Z0-9]+)', t).group(1).lower()
+            if t.endswith('/>') or name in ('br', 'img', 'input', 'meta', 'link', 'source', 'hr', 'wbr'):
+                if stack and name != 'br': stack[-1][2] = False
+                continue
+            if stack and name not in INLINE_OK: stack[-1][2] = False
+            stack.append([name, m.start(), True, m.end()])
+    for pos, txt in sorted(inserts, reverse=True): html = html[:pos] + txt + html[pos:]
+    return html
+SITE_DATA = {'works': [{'img': f, 'title': t, 'label': cl, 'cat': c} for f, t, cl, c in WORKS],
+             'filters': [[k, l] for k, l in FILTERS if k != 'all'],
+             'clients': [{'file': client_logo(sl), 'name': n, 'style': logo_width(client_logo(sl), sl).replace(' style="', '').rstrip('"')} for sl, n in CLIENTS if client_logo(sl)],
+             'promo': PROMO}
+json.dump(SITE_DATA, open(os.path.join(STAND, 'site-data.json'), 'w'), ensure_ascii=False)
 for name, fn in PAGES.items():
     open(os.path.join(ART, name), 'w').write(webp(fn(name != 'index.html')))
-    open(os.path.join(STAND, name), 'w').write(clean_urls(webp(fn(True))))
+    open(os.path.join(STAND, name), 'w').write(mark_editable(clean_urls(webp(fn(True)))))
 print('built', list(PAGES))

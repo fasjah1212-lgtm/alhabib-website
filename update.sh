@@ -30,6 +30,7 @@ tar -xzf "$TMP/site.tar.gz" -C "$TMP" || stop "unpack failed"
 SRC=$(find "$TMP" -mindepth 1 -maxdepth 1 -type d | head -1)
 [ -f "$SRC/index.html" ] && [ -f "$SRC/works.html" ] || stop "site files incomplete"
 TW=""; [ -f "$SRC/src/tweets.py" ] && TW="$TMP/tweets.py" && cp "$SRC/src/tweets.py" "$TW"
+AD=""; [ -f "$SRC/src/admin.py" ] && AD="$TMP/admin" && mkdir -p "$AD" && cp "$SRC/src/admin.py" "$SRC/src/admin.html" "$AD/"
 rm -rf "$SRC/src" "$SRC/README.md" "$SRC/install.sh" "$SRC/update.sh" "$SRC/.htaccess"
 chmod -R a+rX "$SRC"
 mv "$NEW" "$BK/site" || stop "could not move the current files"
@@ -80,6 +81,14 @@ $L6_443
   if (\$request_uri ~ ^/index(\.html)?(\?.*)?\$) { return 301 /\$2; }
   if (\$request_uri ~ ^/([a-z-]+)\.html(\?.*)?\$) { return 301 /\$1\$2; }
   # pages and tweets.json: browsers ask the server each time, so nobody keeps an old page
+  # control panel (/admin): a small program on this server, reachable only through here
+  location ^~ /admin {
+    proxy_pass http://127.0.0.1:8095;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    client_max_body_size 30m;
+    proxy_read_timeout 180s;
+  }
   location / { try_files \$uri \$uri.html \$uri/ =404; add_header Cache-Control "no-cache"; }
   location ~* \.(jpg|jpeg|png|webp|svg|gif|mp4|css|js)$ { expires 7d; add_header Cache-Control "public"; }
   gzip on;
@@ -100,6 +109,42 @@ if echo "$PAGE" | grep -q 'class="nav float"' && [ "$CODE" = 200 ]; then
     echo "0 3 * * * root /usr/bin/python3 /usr/local/lib/alhabib/tweets.py $NEW --retry > /var/log/alhabib-tweets.log 2>&1" > /etc/cron.d/alhabib-tweets
     chmod 644 /etc/cron.d/alhabib-tweets
     say "X posts: $(python3 /usr/local/lib/alhabib/tweets.py "$NEW" 2>&1 | tail -1)"
+  fi
+  # control panel: keep an untouched copy of the pages, then put the panel's saved changes back on them
+  if [ -n "$AD" ]; then
+    python3 -c "import PIL" 2>/dev/null || apt-get install -y -q python3-pil >/dev/null 2>&1 || { apt-get update -q >/dev/null 2>&1; apt-get install -y -q python3-pil >/dev/null 2>&1; }
+    id alhabib >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin alhabib
+    usermod -aG adm alhabib 2>/dev/null
+    D=/var/lib/alhabib
+    mkdir -p /usr/local/lib/alhabib "$D/pristine" "$D/files" "$D/history"
+    cp "$AD/admin.py" "$AD/admin.html" /usr/local/lib/alhabib/
+    rm -f "$D/pristine/"*.html && cp "$NEW/"*.html "$D/pristine/"
+    rm -rf "$D/orig"
+    chown -R alhabib:alhabib "$D" "$NEW"
+    runuser -u alhabib -- /usr/bin/python3 /usr/local/lib/alhabib/admin.py --apply >/dev/null || echo "!!! panel changes could not be applied; the site shows the plain update"
+    cat > /etc/systemd/system/alhabib-admin.service <<UNIT
+[Unit]
+Description=Alhabib site control panel (alhabibfactory.com/admin)
+After=network.target
+[Service]
+User=alhabib
+ExecStart=/usr/bin/python3 /usr/local/lib/alhabib/admin.py
+Restart=always
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=$D $NEW
+[Install]
+WantedBy=multi-user.target
+UNIT
+    systemctl daemon-reload && systemctl enable alhabib-admin >/dev/null 2>&1; systemctl restart alhabib-admin
+    echo "30 2 * * * alhabib /usr/bin/python3 /usr/local/lib/alhabib/admin.py --stats >/dev/null 2>&1" > /etc/cron.d/alhabib-admin
+    chmod 644 /etc/cron.d/alhabib-admin
+    sleep 1
+    if systemctl is-active --quiet alhabib-admin; then say "control panel: https://$DOMAIN/admin"
+    else say "!!! control panel did not start: journalctl -u alhabib-admin -n 30"; fi
+    [ -f "$D/admin.json" ] || say "set the panel password once:  python3 /usr/local/lib/alhabib/admin.py --password"
   fi
   echo
   echo "=============================================="

@@ -182,20 +182,43 @@ def apply(c=None):
         src, dst = p('files', v, f), os.path.join(SITE, f)
         if os.path.exists(src):
             os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy2(src, dst); os.chmod(dst, 0o644)
-    promo = render_promo(c)
     for name, _ in PAGES:
-        try: s = pristine(name)
+        try: write_text(os.path.join(SITE, name), render_page(name, c))
         except OSError: continue
-        for key, new in texts.items():
-            for a, b in reversed(find_elements(s, key)): s = s[:a] + new + s[b:]
-        if name == 'works.html' and block(s, 'works'): s = put_block(s, 'works', render_works(s, c))
-        cl = render_clients(s, c)
-        if cl is not None: s = put_block(s, 'clients', cl)
-        if promo is not None: s = put_block(s, 'promo', promo)
-        for path, im in imgs.items():  # browsers keep photos for days; a new address makes them fetch the new one
-            stem = re.escape(os.path.splitext(path)[0])
-            s = re.sub(r'(%s(?:-\d+)?\.(?:jpg|jpeg|png|webp))(\?v=[0-9a-z]+)?(?=[\s"\',)])' % stem, r'\1?v=' + im['v'], s)
-        write_text(os.path.join(SITE, name), s)
+
+def render_page(name, c):
+    s = pristine(name)
+    for key, new in c['texts'].items():
+        for a, b in reversed(find_elements(s, key)): s = s[:a] + new + s[b:]
+    if name == 'works.html' and block(s, 'works'): s = put_block(s, 'works', render_works(s, c))
+    cl = render_clients(s, c)
+    if cl is not None: s = put_block(s, 'clients', cl)
+    promo = render_promo(c)
+    if promo is not None: s = put_block(s, 'promo', promo)
+    for path, im in c['images'].items():  # browsers keep photos for days; a new address makes them fetch the new one
+        stem = re.escape(os.path.splitext(path)[0])
+        s = re.sub(r'(%s(?:-\d+)?\.(?:jpg|jpeg|png|webp))(\?v=[0-9a-z]+)?(?=[\s"\',)])' % stem, r'\1?v=' + im['v'], s)
+    return s
+
+def render_preview(name, c):
+    """The page as it would look with these (maybe unsaved) changes, inside the panel's preview frame."""
+    s = render_page(name, c)
+    for v, f in needed_files(c):  # new photos are not on the site yet: the panel serves them
+        s = re.sub(r'(?<=["\s,(])%s(\?v=[0-9a-z]+)?(?=[\s"\',)])' % re.escape(f), f'/admin/file/{v}/{f}', s)
+    # no tracking from previews, and every relative address points at the live site
+    s = re.sub(r'<script>window\.dataLayer.*?</script>', '', s, flags=re.S)
+    s = re.sub(r'<script>if\(/\(\^\|\\\.\)alhabibfactory.*?</script>', '', s, flags=re.S)
+    m = re.search(r'id="promo" data-until="([0-9-]+)"', s)
+    seen = f"<script>try{{localStorage.setItem('promo-seen-{m.group(1)}','1')}}catch(e){{}}</script>" if m else ''
+    s = s.replace('<head>', '<head>\n<base href="/" target="_top">' + seen, 1)
+    s = s.replace('</body>', PREVIEW_JS + '</body>', 1)
+    return s
+PREVIEW_JS = """<script>
+var l = document.getElementById('loader'); if (l) l.remove();
+document.addEventListener('click', function(e){ var a = e.target.closest('a'); if (!a) return; var h = a.getAttribute('href') || '';
+  e.preventDefault(); var m = h.match(/^(?:\\/|\\.\\/)?([a-z-]*)(?:\\.html)?(?:#.*)?$/);
+  if (m) parent.postMessage({go: (m[1] || 'index') + '.html'}, location.origin); }, true);
+</script>"""
 
 # ---------------- photos (Pillow) ----------------
 def pil():
@@ -439,7 +462,7 @@ def check_password(user, pw):
     if not a.get('hash'): return False
     h = hashlib.pbkdf2_hmac('sha256', pw.encode(), bytes.fromhex(a['salt']), 200000).hex()
     return hmac.compare_digest(h, a['hash']) and hmac.compare_digest(user.strip().lower(), a['user'])
-SESSIONS = {}; TRIES = {}
+SESSIONS = {}; TRIES = {}; DRAFTS = {}
 def new_session():
     t = secrets.token_urlsafe(32); SESSIONS[t] = time.time() + 12 * 3600; return t
 
@@ -453,13 +476,16 @@ class H(http.server.BaseHTTPRequestHandler):
         t = m and m.group(1)
         if t and SESSIONS.get(t, 0) > time.time(): return t
         return None
-    def send(self, code, body, ctype='application/json; charset=utf-8', headers=()):
+    def send(self, code, body, ctype='application/json; charset=utf-8', headers=(), frame=False):
         if not isinstance(body, bytes): body = (json.dumps(body, ensure_ascii=False) if 'json' in ctype else body).encode()
         self.send_response(code)
         self.send_header('Content-Type', ctype); self.send_header('Content-Length', str(len(body)))
-        self.send_header('Cache-Control', 'no-store'); self.send_header('X-Frame-Options', 'DENY')
+        self.send_header('Cache-Control', 'no-store'); self.send_header('X-Frame-Options', 'SAMEORIGIN' if frame else 'DENY')
         self.send_header('X-Content-Type-Options', 'nosniff'); self.send_header('Referrer-Policy', 'same-origin')
-        self.send_header('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; frame-ancestors 'none'")
+        if frame:  # the preview page: the site's own files only, no outside scripts, shown only inside the panel
+            self.send_header('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; connect-src 'self'; frame-ancestors 'self'")
+        else:
+            self.send_header('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; frame-src 'self'; frame-ancestors 'none'")
         for k, v in headers: self.send_header(k, v)
         self.end_headers(); self.wfile.write(body)
     def body(self, limit):
@@ -478,6 +504,14 @@ class H(http.server.BaseHTTPRequestHandler):
                                        'works': site_data()['works'], 'filters': work_filters(), 'clients': site_data()['clients'],
                                        'promo': site_data().get('promo'), 'history': history()})
             if path == '/admin/api/stats': return self.send(200, stats_summary())
+            m = re.fullmatch(r'/admin/preview/([a-z-]+\.html)', path)
+            if m and m.group(1) in NAMES:
+                c = DRAFTS.get(self.session()) or content()
+                return self.send(200, render_preview(m.group(1), c), 'text/html; charset=utf-8', frame=True)
+            m = re.fullmatch(r'/admin/file/([0-9a-f]{12,20})/(img/[a-z0-9_/-]+\.(jpg|png|webp))', path)
+            if m and '..' not in path and os.path.exists(p('files', m.group(1), m.group(2))):
+                with open(p('files', m.group(1), m.group(2)), 'rb') as f: data = f.read()
+                return self.send(200, data, {'jpg': 'image/jpeg', 'png': 'image/png', 'webp': 'image/webp'}[m.group(3)])
         except Fail as e: return self.send(400, {'error': str(e)})
         self.send(404, {'error': 'not found'})
     def do_POST(self):
@@ -502,6 +536,8 @@ class H(http.server.BaseHTTPRequestHandler):
             if path == '/admin/api/save':
                 new = clean_content(json.loads(self.body(2_000_000)))
                 commit(new); return self.send(200, {'ok': True, 'content': content(), 'history': history()})
+            if path == '/admin/api/draft':
+                DRAFTS[t] = clean_content(json.loads(self.body(2_000_000))); return self.send(200, {'ok': True})
             if path == '/admin/api/upload':
                 kind = (q.get('kind') or [''])[0]; target = (q.get('path') or [''])[0]
                 with LOCK: r = process(kind, target, self.body(25_000_000))

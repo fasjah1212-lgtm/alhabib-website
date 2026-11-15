@@ -235,6 +235,18 @@ def describe_node(nodes, i):
         if a is not None and ident(nodes[a]):
             idt = ident(nodes[a]); nth = sum(1 for k in range(a) if ident(nodes[k]) == idt)
             return {'by': idt[0], 'v': idt[1], 'up': 0, 'nth': nth, 'path': path}, i
+        # no named parent: go up to a parent that has something named inside, and come back down from there
+        path, a = [], i
+        while len(path) < 12:
+            par = nodes[a]['parent']
+            if par is None or nodes[par]['tag'] in ('html', 'body'): break
+            path.insert(0, kids(nodes, par).index(a)); a = par
+            for j in range(a + 1, len(nodes)):
+                if nodes[j]['start'] >= nodes[a]['end']: break
+                idt = ident(nodes[j])
+                if idt:
+                    nth = sum(1 for k in range(j) if ident(nodes[k]) == idt)
+                    return {'by': idt[0], 'v': idt[1], 'up': depth(nodes, j) - depth(nodes, a), 'nth': nth, 'path': path}, i
     while i is not None:
         n = nodes[i]
         if n['tag'] in ('html', 'body', 'head'): return None, None
@@ -293,6 +305,9 @@ def apply_ops(s, name, ops):
             s = s[:n['start']] + s[n['end']:]
         elif op['kind'] == 'link':
             s = set_link(s, n, op['href'])
+        elif op['kind'] == 'text':
+            ce = f"</{n['tag']}>"
+            if s[n['end'] - len(ce):n['end']].lower() == ce: s = s[:n['oend']] + op['html'] + s[n['end'] - len(ce):]
         elif op['kind'] == 'move':
             sib = [k for k, x in enumerate(nodes) if x['parent'] == n['parent'] and k != i and x['tag'] not in ('script', 'style')]
             piece = s[n['start']:n['end']]
@@ -485,6 +500,9 @@ def clean_content(new):
                 if not files_ok(op.get('v'), op.get('files')): continue
                 q['v'], q['files'] = op['v'], op['files']
         elif q['kind'] == 'hide': pass
+        elif q['kind'] == 'text':
+            q['html'] = re.sub(r'<(?!/?(br|em|b|strong|i|u|span|bdi|small|svg|path|rect|circle|line|polyline|polygon|g)\b)[^>]*>', '', clean_html(str(op.get('html') or '')))[:4000]
+            if not q['html'].strip(): continue
         elif q['kind'] == 'move': q['dir'] = 'up' if op.get('dir') == 'up' else 'down'
         elif q['kind'] == 'link':
             q['href'] = safe_url(op.get('href'))

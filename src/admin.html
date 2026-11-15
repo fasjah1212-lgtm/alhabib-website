@@ -337,13 +337,26 @@ function fText(){
   var tag = el.tagName.toLowerCase();
   el.onkeydown = function(e){ if (e.key === 'Enter' && !/^(p|li|dd|blockquote)$/.test(tag)) { e.preventDefault(); fDone(); } if (e.key === 'Escape') fDone(); };
   el.onpaste = function(e){ e.preventDefault(); el.ownerDocument.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text')); };
-  el.oninput = function(){
-    var v = noN(el.innerHTML);
-    if (FS.key){ var orig = S.texts[FS.key] && S.texts[FS.key].html; if (v === orig) delete C.texts[FS.key]; else C.texts[FS.key] = v; }
-    else editBlock(el, function(y){ y.innerHTML = v; });
-    dirty(true);
-  };
+  el.oninput = function(){ fStore(el, noN(el.innerHTML)); };
   fPanel();
+}
+function fStore(el, v){
+  if (FS.key){ var orig = S.texts[FS.key] && S.texts[FS.key].html; if (v === orig) delete C.texts[FS.key]; else C.texts[FS.key] = v; }
+  else if (FS.blk) editBlock(el, function(y){ y.innerHTML = v; });
+  else fTextOp(v);
+  dirty(true);
+}
+function fTextOp(v){  /* text the panel had no name for: kept as a change on that spot */
+  var t = JSON.stringify(FS.target), op = C.ops.filter(function(o){ return o.kind === 'text' && o.page === pvPage && JSON.stringify(o.target) === t; })[0];
+  var lbl = 'تعديل الكلام: ' + v.replace(/<[^>]+>/g, '').slice(0, 50);
+  if (op){ op.html = v; op.label = lbl; } else C.ops.push({id:rid(), page:pvPage, kind:'text', target:FS.target, html:v, label:lbl});
+}
+function fLabel(txt){  /* words on a button or link, keeping its icon */
+  var el = fEl(); if (!el || !txt) return toast('اكتب الكلام', true);
+  var put = function(y){ var w = y.ownerDocument.createTreeWalker(y, NodeFilter.SHOW_TEXT), ns = [], x; while ((x = w.nextNode())) if (x.nodeValue.trim()) ns.push(x);
+    if (ns.length){ ns[0].nodeValue = txt; ns.slice(1).forEach(function(n){ n.remove(); }); } else y.appendChild(y.ownerDocument.createTextNode(txt)); };
+  if (FS.blk){ if (editBlock(el, put)){ pendSel = fLoc(el); return dirty(); } }
+  put(el); fTextOp(noN(el.innerHTML)); pendSel = fLoc(el); dirty();
 }
 function fDone(){ if (!fEdit) return; var el = fEdit; el.contentEditable = 'false'; pendSel = fLoc(el); fEdit = null; dirty(); }
 function addOp(op, sel){ op.id = op.id || rid(); op.page = pvPage; C.ops.push(op); pendSel = sel === undefined ? null : sel; dirty(); }
@@ -395,17 +408,21 @@ function fPanel(){
   if (!FS){ box.innerHTML = '<div class="empty"><b>اختر مكان بالمعاينة</b>مرّر الماوس على الموقع واضغط على الجزء اللي تبي تشتغل عليه.' + (innerWidth < 1280 ? '<button class="btn dark sm" id="fopen" style="margin-top:8px">افتح المعاينة واختر</button>' : '') + '</div>';
     var fo = $('#fopen'); if (fo) fo.onclick = function(){ document.querySelector('.shell').classList.add('pvon'); pvFit(); };
   } else {
-    var canText = FS.textonly && (FS.key || FS.blk), canLink = FS.link;
+    var canText = FS.textonly, canLabel = !FS.textonly && /^(a|button)$/.test(FS.tag), canLink = FS.link;
     box.innerHTML = '<div class="fsel"><div class="what"><span class="tag red">' + esc(TAG[FS.tag] || ({div:'خانة', section:'قسم', a:'رابط', button:'زر', img:'صورة', figure:'صورة', picture:'صورة', ul:'قائمة', dl:'مجموعة', article:'خانة', span:'كلمة'})[FS.tag] || 'جزء') + '</span><span>' + esc(FS.text || '') + '</span></div>' +
       (fEdit ? '<p class="note" style="margin:0 0 10px">اكتب على الموقع نفسه بالمعاينة. لما تخلص اضغط «تم».</p><div class="acts"><button class="btn sm" data-a="done">تم</button></div>' :
-      '<div class="acts">' + (canText ? '<button class="btn sm" data-a="text">تعديل الكلام</button>' : '') + (canLink ? '<button class="btn sm" data-a="link">تغيير الرابط</button>' : '') +
+      (canText ? '<label class="f"><span>الكلام (اكتب هنا والتغيير يطلع بالمعاينة على طول)</span><textarea class="inp" id="ftx" rows="2"></textarea></label>' : '') + '<div class="acts">' + (canText ? '<button class="btn ghost sm" data-a="text">اكتب على الموقع نفسه</button>' : '') + (canLabel ? '<button class="btn sm" data-a="label">تعديل الكلام</button>' : '') + (canLink ? '<button class="btn sm" data-a="link">تغيير الرابط</button>' : '') +
       '<button class="btn ghost sm" data-a="add-before">أضف فوقه</button><button class="btn ghost sm" data-a="add-after">أضف تحته</button><button class="btn ghost sm" data-a="copy">كرّر</button>' +
       '<button class="btn ghost sm" data-a="up" aria-label="حرّك فوق">↑ فوق</button><button class="btn ghost sm" data-a="down" aria-label="حرّك تحت">↓ تحت</button><button class="btn ghost sm" data-a="hide">' + (FS.target.by === 'blk' && FS.target.up === 0 && !(FS.target.path || []).length ? 'حذف' : 'إخفاء') + '</button>' +
       '<button class="btn ghost sm" data-a="big">حدّد الأكبر</button></div>') + '<div id="fform"></div></div>';
     box.querySelectorAll('[data-a]').forEach(function(b){ b.onclick = function(){ var a = b.dataset.a;
       if (a === 'text') fText(); else if (a === 'done') fDone(); else if (a === 'copy') fCopy(); else if (a === 'hide') fHide();
-      else if (a === 'up' || a === 'down') fMove(a); else if (a === 'link'){ fMode = 'link'; fForm(); } else if (a === 'add-before' || a === 'add-after'){ fMode = a; fForm(); }
+      else if (a === 'up' || a === 'down') fMove(a); else if (a === 'link'){ fMode = 'link'; fForm(); } else if (a === 'label'){ fMode = 'label'; fForm(); } else if (a === 'add-before' || a === 'add-after'){ fMode = a; fForm(); }
       else if (a === 'big'){ var el = fEl(), p = el && el.parentElement && el.parentElement.closest('[data-n]'); if (p) fSelect(+p.dataset.n); } }; });
+    var tx = $('#ftx'), el0 = fEl();
+    if (tx && el0){ tx.value = el0.innerText.trim(); var ch = false;
+      tx.oninput = function(){ var el = fEl(); if (!el) return; ch = true; el.innerHTML = esc(tx.value).replace(/\n/g, '<br>'); fStore(el, esc(tx.value).replace(/\n/g, '<br>')); };
+      tx.onblur = function(){ var el = fEl(); if (ch && el){ ch = false; pendSel = fLoc(el) || ('[data-n="' + FS.n + '"]'); dirty(); } }; }
     fForm();
   }
   var ops = C.ops.filter(function(o){ return o.page === pvPage; });
@@ -414,7 +431,10 @@ function fPanel(){
 }
 function fForm(){
   var f = $('#fform'); if (!f) return; f.innerHTML = '';
-  if (fMode === 'link'){
+  if (fMode === 'label'){
+    f.innerHTML = '<div class="fform"><label class="f" style="margin:0"><span>الكلام الجديد</span><input class="inp" id="fl" maxlength="80"></label><div class="acts"><button class="btn sm" id="fok">حفظ</button><button class="btn ghost sm" id="fno">إلغاء</button></div></div>';
+    $('#fl').value = FS.text || ''; $('#fok').onclick = function(){ fLabel($('#fl').value.trim()); };
+  } else if (fMode === 'link'){
     f.innerHTML = '<div class="fform"><label class="f" style="margin:0"><span>الرابط</span><input class="inp" id="fu" dir="ltr" placeholder="https://"></label>' +
       (FS.blk ? '<label class="f" style="margin:0"><span>الكلام على الزر (اختياري)</span><input class="inp" id="fl"></label>' : '') + '<div class="acts"><button class="btn sm" id="fok">حفظ الرابط</button><button class="btn ghost sm" id="fno">إلغاء</button></div></div>';
     $('#fok').onclick = function(){ fLink($('#fu').value.trim(), $('#fl') ? $('#fl').value.trim() : ''); };

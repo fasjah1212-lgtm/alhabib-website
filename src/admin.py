@@ -34,7 +34,7 @@ def write_text(path, s):
     with open(path + '.part', 'w', encoding='utf-8') as f: f.write(s)
     os.replace(path + '.part', path)
 
-EMPTY = {'texts': {}, 'images': {}, 'works': {'added': [], 'hidden': [], 'edits': {}}, 'clients': {'added': [], 'hidden': []}, 'promo': None}
+EMPTY = {'texts': {}, 'images': {}, 'works': {'added': [], 'hidden': [], 'edits': {}}, 'clients': {'added': [], 'hidden': []}, 'promo': None, 'ops': []}
 def content():
     c = load(p('content.json'), {})
     for k, v in EMPTY.items(): c.setdefault(k, json.loads(json.dumps(v)))
@@ -162,6 +162,8 @@ def needed_files(c):
     for w in c['works']['added']: out += [(w['v'], f) for f in w['files']]
     for cl in c['clients']['added']: out += [(cl['v'], f) for f in cl['files']]
     if c['promo'] and c['promo'].get('on') and c['promo'].get('v'): out += [(c['promo']['v'], f) for f in c['promo']['files']]
+    for op in c.get('ops') or []:
+        if op.get('v'): out += [(op['v'], f) for f in op['files']]
     return out
 
 def apply(c=None):
@@ -186,6 +188,136 @@ def apply(c=None):
         try: write_text(os.path.join(SITE, name), render_page(name, c))
         except OSError: continue
 
+
+# ---------------- free editing: add / copy / move / hide / link anywhere on a page ----------------
+# The page is read as a tree of elements (start/end offsets). A spot is named by something stable inside it:
+# a text key (data-e), a panel block (data-blk) or a photo (img src), plus how many levels up and which copy.
+VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'}
+TAG_RE = re.compile(r'<!--.*?-->|<script\b.*?</script>|<style\b.*?</style>|<noscript\b.*?</noscript>|<(/?)([a-zA-Z][a-zA-Z0-9-]*)\b(?:[^>"\']|"[^"]*"|\'[^\']*\')*>', re.S)
+def tree(s):
+    nodes, stack = [], []
+    for m in TAG_RE.finditer(s):
+        if m.group(2) is None: continue
+        tag = m.group(2).lower()
+        if not m.group(1):
+            nodes.append({'tag': tag, 'start': m.start(), 'oend': m.end(), 'end': m.end(), 'parent': stack[-1] if stack else None, 'open': m.group(0)})
+            if tag not in VOID and not m.group(0).endswith('/>'): stack.append(len(nodes) - 1)
+        else:
+            for j in range(len(stack) - 1, -1, -1):
+                if nodes[stack[j]]['tag'] == tag:
+                    for k in stack[j + 1:]: nodes[k]['end'] = m.start()
+                    nodes[stack[j]]['end'] = m.end(); del stack[j:]; break
+    return nodes
+def ident(n):
+    o = n['open']
+    m = re.search(r'\sdata-blk="([a-z0-9]+)"', o)
+    if m: return ('blk', m.group(1))
+    m = re.search(r'\sdata-e="([0-9a-f]{10})"', o)
+    if m: return ('key', m.group(1))
+    if n['tag'] == 'img':
+        m = re.search(r'\ssrc="([^"?]+)', o)
+        if m: return ('img', m.group(1))
+    return None
+def depth(nodes, i):
+    d = 0
+    while nodes[i]['parent'] is not None: i = nodes[i]['parent']; d += 1
+    return d
+def kids(nodes, i): return [k for k in range(i + 1, len(nodes)) if nodes[k]['parent'] == i]
+def describe_node(nodes, i):
+    """A stable name for element i: something inside it that has a name, else a named parent plus the way down."""
+    n = nodes[i] if 0 <= i < len(nodes) else None
+    if n and n['tag'] not in ('html', 'body', 'head') and not any(ident(nodes[j]) for j in range(i, len(nodes)) if nodes[j]['start'] < n['end']):
+        path, a = [], i
+        while a is not None and not ident(nodes[a]) and len(path) < 12:
+            par = nodes[a]['parent']
+            if par is None or nodes[par]['tag'] in ('html', 'body'): a = None; break
+            path.insert(0, kids(nodes, par).index(a)); a = par
+        if a is not None and ident(nodes[a]):
+            idt = ident(nodes[a]); nth = sum(1 for k in range(a) if ident(nodes[k]) == idt)
+            return {'by': idt[0], 'v': idt[1], 'up': 0, 'nth': nth, 'path': path}, i
+    while i is not None:
+        n = nodes[i]
+        if n['tag'] in ('html', 'body', 'head'): return None, None
+        j = i
+        while j < len(nodes) and nodes[j]['start'] < n['end']:
+            idt = ident(nodes[j])
+            if idt:
+                nth = sum(1 for k in range(j) if ident(nodes[k]) == idt)
+                return {'by': idt[0], 'v': idt[1], 'up': depth(nodes, j) - depth(nodes, i), 'nth': nth}, i
+            j += 1
+        i = n['parent']
+    return None, None
+def resolve(nodes, t):
+    hits = [k for k, n in enumerate(nodes) if ident(n) == (t['by'], t['v'])]
+    if len(hits) <= t.get('nth', 0): return None
+    i = hits[t.get('nth', 0)]
+    for _ in range(t.get('up', 0)):
+        i = nodes[i]['parent']
+        if i is None: return None
+    for k in t.get('path') or []:
+        ks = kids(nodes, i)
+        if k >= len(ks): return None
+        i = ks[k]
+    return i
+URL_RE = re.compile(r'(https?://[^\s"<>]+|mailto:[^\s"<>]+|tel:[0-9+]+|/[^\s"<>]*|#[^\s"<>]*|[a-z-]+(#[^\s"<>]*)?)')
+def safe_url(u):
+    u = (u or '').strip()
+    return u if len(u) <= 500 and URL_RE.fullmatch(u) else None
+def set_link(s, n, href):
+    """Point element n (or the first link / button inside it) at href."""
+    nodes = tree(s[n['start']:n['end']])
+    for k in nodes:
+        if k['tag'] in ('a', 'button'): break
+    else: return s
+    a, b = n['start'] + k['start'], n['start'] + k['oend']
+    o = s[a:b]
+    ext = href.startswith('http')
+    if k['tag'] == 'button':
+        o = re.sub(r'^<button', '<a', o); o = re.sub(r'\s(type|data-copy)="[^"]*"', '', o)
+        o = re.sub(r'(class="[^"]*?)\s*\bcopy\b', r'\1', o)  # the site would copy instead of opening the link
+        end_a, end_b = n['start'] + k['end'] - len('</button>'), n['start'] + k['end']
+        s = s[:end_a] + '</a>' + s[end_b:]
+    o = re.sub(r'\s(href|target|rel)="[^"]*"', '', o)
+    o = o[:-1] + f' href="{html.escape(href)}"' + (' target="_blank" rel="noopener"' if ext else '') + '>'
+    return s[:a] + o + s[b:]
+def apply_ops(s, name, ops):
+    for op in ops:
+        if op.get('page') != name: continue
+        nodes = tree(s); i = resolve(nodes, op['target'])
+        if i is None: continue
+        n = nodes[i]
+        if op['kind'] == 'insert':
+            at = n['start'] if op['pos'] == 'before' else n['end']
+            s = s[:at] + op['html'] + s[at:]
+        elif op['kind'] == 'hide':
+            s = s[:n['start']] + s[n['end']:]
+        elif op['kind'] == 'link':
+            s = set_link(s, n, op['href'])
+        elif op['kind'] == 'move':
+            sib = [k for k, x in enumerate(nodes) if x['parent'] == n['parent'] and k != i and x['tag'] not in ('script', 'style')]
+            piece = s[n['start']:n['end']]
+            if op['dir'] == 'up':
+                prev = [k for k in sib if nodes[k]['end'] <= n['start']]
+                if not prev: continue
+                p0 = nodes[prev[-1]]['start']
+                s = s[:p0] + piece + s[p0:n['start']] + s[n['end']:]
+            else:
+                nxt = [k for k in sib if nodes[k]['start'] >= n['end']]
+                if not nxt: continue
+                e1 = nodes[nxt[0]]['end']
+                s = s[:n['start']] + s[n['end']:e1] + piece + s[e1:]
+    return s
+BAD_TAGS = re.compile(r'<(script|iframe|object|embed|style|link|meta|base|form)\b.*?(</\1>|>)', re.S | re.I)
+def clean_html(h):
+    h = BAD_TAGS.sub('', h or '')
+    h = re.sub(r'\son[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)', '', h, flags=re.I)
+    h = re.sub(r'\s(href|src|action)\s*=\s*"\s*(javascript|data|vbscript):[^"]*"', r' \1="#"', h, flags=re.I)
+    h = re.sub(r'\s(data-n|data-e|contenteditable|spellcheck|data-sel|data-hov)(="[^"]*")?', '', h)
+    return h[:60000]
+def snippet(s, n):
+    t = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', html.unescape(s[n['oend']:n['end']]))).strip()
+    return t[:80]
+
 def render_page(name, c):
     s = pristine(name)
     for key, new in c['texts'].items():
@@ -195,6 +327,7 @@ def render_page(name, c):
     if cl is not None: s = put_block(s, 'clients', cl)
     promo = render_promo(c)
     if promo is not None: s = put_block(s, 'promo', promo)
+    s = apply_ops(s, name, c.get('ops') or [])
     for path, im in c['images'].items():  # browsers keep photos for days; a new address makes them fetch the new one
         stem = re.escape(os.path.splitext(path)[0])
         s = re.sub(r'(%s(?:-\d+)?\.(?:jpg|jpeg|png|webp))(\?v=[0-9a-z]+)?(?=[\s"\',)])' % stem, r'\1?v=' + im['v'], s)
@@ -203,6 +336,10 @@ def render_page(name, c):
 def render_preview(name, c):
     """The page as it would look with these (maybe unsaved) changes, inside the panel's preview frame."""
     s = render_page(name, c)
+    for i, n in sorted(enumerate(tree(s)), key=lambda a: -a[1]['start']):  # the panel picks elements by this number
+        if n['tag'] not in ('html', 'head', 'body', 'meta', 'link', 'title', 'base'):
+            at = n['oend'] - (2 if n['open'].endswith('/>') else 1)
+            s = s[:at] + f' data-n="{i}"' + s[at:]
     for v, f in needed_files(c):  # new photos are not on the site yet: the panel serves them
         s = re.sub(r'(?<=["\s,(])%s(\?v=[0-9a-z]+)?(?=[\s"\',)])' % re.escape(f), f'/admin/file/{v}/{f}', s)
     # no tracking from previews, and every relative address points at the live site
@@ -284,6 +421,11 @@ def process(kind, target, data):
         if bb: lg = lg.crop(bb)
         ratio = lg.width / max(1, lg.height); width = min(80, (4400 * ratio) ** .5 / 188 * 100)
         return {'v': v, 'file': name, 'width': round(width, 1), 'files': [store(v, f'img/clients/{name}', lg, 'PNG', optimize=True)]}
+    if kind == 'block':
+        stem = 'blk-u' + v; b = rgb(fit(im, 1400))
+        files = [store(v, f'img/{stem}.jpg', b, 'JPEG', quality=86, optimize=True, progressive=True),
+                 store(v, f'img/{stem}.webp', b, 'WEBP', quality=82, method=6)]
+        return {'v': v, 'stem': stem, 'w': b.width, 'h': b.height, 'files': files}
     if kind == 'promo':
         stem = 'promo-u' + v; pm = rgb(fit(im, 540))
         files = [store(v, f'img/{stem}.jpg', pm, 'JPEG', quality=86, optimize=True, progressive=True),
@@ -324,6 +466,31 @@ def clean_content(new):
             c['clients']['added'].append({'v': a['v'], 'files': a['files'], 'file': a['file'], 'width': float(a.get('width') or 60), 'name': str(a.get('name') or '')[:120]})
     basec = {x['file'] for x in site_data()['clients']}
     c['clients']['hidden'] = [x for x in (cl.get('hidden') or []) if x in basec]
+    for op in (new.get('ops') or [])[:400]:
+        if not isinstance(op, dict) or op.get('page') not in NAMES or not re.fullmatch(r'[a-z0-9]{6,16}', str(op.get('id'))): continue
+        t = op.get('target') or {}
+        if t.get('by') not in ('key', 'blk', 'img') or not re.fullmatch(r'[a-z0-9/_.-]{1,200}', str(t.get('v'))): continue
+        q = {'id': op['id'], 'page': op['page'], 'kind': op.get('kind'), 'label': str(op.get('label') or '')[:80],
+             'target': {'by': t['by'], 'v': t['v'], 'up': max(0, min(30, int(t.get('up') or 0))), 'nth': max(0, min(500, int(t.get('nth') or 0)))}}
+        if t.get('path'):
+            if not isinstance(t['path'], list) or len(t['path']) > 12 or not all(isinstance(x, int) and 0 <= x <= 500 for x in t['path']): continue
+            q['target']['path'] = t['path']
+        if q['kind'] == 'insert':
+            q['pos'] = 'before' if op.get('pos') == 'before' else 'after'
+            h = clean_html(str(op.get('html') or ''))
+            if not h.strip(): continue
+            if f'data-blk="{op["id"]}"' not in h: h = re.sub(r'^\s*<([a-zA-Z0-9]+)', r'<\1 data-blk="%s"' % op['id'], h, count=1)
+            q['html'] = h
+            if op.get('v'):
+                if not files_ok(op.get('v'), op.get('files')): continue
+                q['v'], q['files'] = op['v'], op['files']
+        elif q['kind'] == 'hide': pass
+        elif q['kind'] == 'move': q['dir'] = 'up' if op.get('dir') == 'up' else 'down'
+        elif q['kind'] == 'link':
+            q['href'] = safe_url(op.get('href'))
+            if not q['href']: continue
+        else: continue
+        c['ops'].append(q)
     pr = new.get('promo')
     if isinstance(pr, dict):
         if not pr.get('on'): c['promo'] = {'on': False}
@@ -383,6 +550,7 @@ def describe(old, new):
     if new['works'] != old['works']: parts.append('أعمالنا')
     if new['clients'] != old['clients']: parts.append('العملاء')
     if new['promo'] != old['promo']: parts.append('الإعلان')
+    if new.get('ops') != old.get('ops'): parts.append('تحرير حر')
     return '، '.join(parts) or 'حفظ'
 
 def commit(new, note=None):
@@ -493,7 +661,7 @@ class H(http.server.BaseHTTPRequestHandler):
         if n > limit: raise Fail('الملف كبير، الحد %d ميقا' % (limit // 1_000_000))
         return self.rfile.read(n)
     def do_GET(self):
-        u = urllib.parse.urlparse(self.path); path = u.path.rstrip('/')
+        u = urllib.parse.urlparse(self.path); path = u.path.rstrip('/'); q = urllib.parse.parse_qs(u.query)
         if path == '/admin':
             return self.send(200, PAGE, 'text/html; charset=utf-8')
         if not self.session(): return self.send(401, {'error': 'login'})
@@ -504,6 +672,26 @@ class H(http.server.BaseHTTPRequestHandler):
                                        'works': site_data()['works'], 'filters': work_filters(), 'clients': site_data()['clients'],
                                        'promo': site_data().get('promo'), 'history': history()})
             if path == '/admin/api/stats': return self.send(200, stats_summary())
+            if path in ('/admin/api/target', '/admin/api/copy'):
+                name = (q.get('page') or [''])[0]; idx = int((q.get('n') or ['-1'])[0])
+                if name not in NAMES: raise Fail('صفحة غير معروفة')
+                c = DRAFTS.get(self.session()) or content(); s = render_page(name, c); nodes = tree(s)
+                if not 0 <= idx < len(nodes): raise Fail('اختر مكان بالمعاينة')
+                d, i = describe_node(nodes, idx)
+                if not d: raise Fail('هذا المكان ما ينفع نحدده، اختر عنصر أصغر')
+                n = nodes[i]; blk = None; k = i
+                while k is not None:
+                    m2 = re.search(r'\sdata-blk="([a-z0-9]+)"', nodes[k]['open'])
+                    if m2: blk = m2.group(1); break
+                    k = nodes[k]['parent']
+                if path == '/admin/api/copy':
+                    piece = re.sub(r'\sdata-(e|blk|bi)="[^"]*"', '', s[n['start']:n['end']])
+                    return self.send(200, {'html': piece})
+                ce = f"</{n['tag']}>"; inner = s[n['oend']:n['end'] - len(ce)] if s[n['end'] - len(ce):n['end']].lower() == ce else s[n['oend']:n['end']]
+                return self.send(200, {'target': d, 'n': i, 'tag': n['tag'], 'text': snippet(s, n), 'blk': blk,
+                                       'key': d['v'] if d['by'] == 'key' and d['up'] == 0 and not d.get('path') else None,
+                                       'textonly': not re.search(r'<(?!/?(br|em|b|strong|i|u|span|bdi|small)\b)[a-zA-Z/]', inner),
+                                       'link': bool(re.search(r'<(a|button)\b', s[n['start']:n['end']]))})
             m = re.fullmatch(r'/admin/preview/([a-z-]+\.html)', path)
             if m and m.group(1) in NAMES:
                 c = DRAFTS.get(self.session()) or content()

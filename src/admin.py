@@ -546,4 +546,5 @@ if __name__ == '__main__':
     if arg == '--password': set_password()
     elif arg == '--apply': apply(); print('changes applied')
     elif arg == '--stats': refresh_stats(); print('stats updated')
-    else: main()
+    elif arg == '': main()
+    else: print('unknown option. use: --password, --apply or --stats'); sys.exit(2)
